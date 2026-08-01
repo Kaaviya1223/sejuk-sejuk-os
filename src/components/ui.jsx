@@ -1,0 +1,329 @@
+import { AlertTriangle, Check, ChevronDown, Info, Loader2, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+
+/* ------------------------------------------------------------------ */
+/* Layout                                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Every desktop page opens on the same brand band, which runs edge to edge
+ * behind the content column. `deep` adds room at the bottom for a KPI row to
+ * sit half on the band and half on the canvas.
+ */
+export function PageHeader({ title, subtitle, actions, deep = false }) {
+  return (
+    <div
+      className={`bleed bg-brand-sweep px-4 pt-5 sm:px-6 lg:px-8 ${
+        deep ? 'pb-20' : 'mb-6 pb-5'
+      }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
+            {title}
+          </h1>
+          {subtitle && <p className="mt-0.5 text-sm text-white/75">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      </div>
+    </div>
+  )
+}
+
+export function Card({ children, className = '', padded = true }) {
+  return (
+    <div
+      className={`rounded-xl border border-slate-line bg-white shadow-card ${
+        padded ? 'p-5' : ''
+      } ${className}`}
+    >
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Card headings are the dashboard's signposts, so they carry the brand blue
+ * at a weight you can find while scanning — the body underneath stays quiet.
+ */
+export function CardHeader({ title, subtitle, actions, divided = true }) {
+  return (
+    <div
+      className={`flex items-start justify-between gap-3 px-5 py-4 ${
+        divided ? 'border-b border-slate-line' : ''
+      }`}
+    >
+      <div>
+        <h2 className="font-display text-base font-semibold tracking-tight text-marine-600">
+          {title}
+        </h2>
+        {subtitle && <p className="mt-0.5 text-xs text-slate">{subtitle}</p>}
+      </div>
+      {actions}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Controls                                                            */
+/* ------------------------------------------------------------------ */
+
+const BUTTON_VARIANTS = {
+  primary: 'bg-marine text-white hover:bg-marine-600 disabled:bg-marine/40',
+  accent: 'bg-coolant text-white hover:bg-coolant-600 disabled:bg-coolant/40',
+  outline: 'border border-slate-line bg-white text-marine hover:bg-frost disabled:text-slate-light',
+  ghost: 'text-slate hover:bg-frost-deep hover:text-marine',
+  danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300',
+  whatsapp: 'bg-[#25D366] text-[#0B3B23] hover:brightness-95',
+  // For use on the brand band, where a filled navy button would sink into it.
+  band: 'bg-white/15 text-white ring-1 ring-inset ring-white/30 hover:bg-white/25',
+  bandSolid: 'bg-white text-marine-600 hover:bg-frost disabled:text-slate-light',
+}
+
+export function Button({
+  children,
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  className = '',
+  ...props
+}) {
+  const sizes = {
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-5 py-3 text-base',
+  }
+
+  return (
+    <button
+      {...props}
+      disabled={props.disabled || loading}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition disabled:cursor-not-allowed ${
+        BUTTON_VARIANTS[variant]
+      } ${sizes[size]} ${className}`}
+    >
+      {loading && <Loader2 size={14} className="animate-spin" />}
+      {children}
+    </button>
+  )
+}
+
+export function Field({ label, hint, error, required, children, className = '' }) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-1.5 flex items-baseline justify-between gap-2">
+        <span className="text-sm font-medium text-marine">
+          {label}
+          {required && <span className="ml-0.5 text-copper">*</span>}
+        </span>
+        {hint && <span className="text-xs text-slate-light">{hint}</span>}
+      </span>
+      {children}
+      {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
+    </label>
+  )
+}
+
+const CONTROL =
+  'w-full rounded-lg border border-slate-line bg-white px-3 py-2 text-marine placeholder:text-slate-light transition focus:border-coolant focus:outline-none focus:ring-2 focus:ring-coolant/25 disabled:bg-frost disabled:text-slate'
+
+export function Input({ className = '', ...props }) {
+  return <input {...props} className={`${CONTROL} ${className}`} />
+}
+
+export function Textarea({ className = '', rows = 3, ...props }) {
+  return <textarea {...props} rows={rows} className={`${CONTROL} resize-y ${className}`} />
+}
+
+export function Select({ className = '', children, ...props }) {
+  return (
+    <select {...props} className={`${CONTROL} ${className}`}>
+      {children}
+    </select>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Feedback                                                            */
+/* ------------------------------------------------------------------ */
+
+export function Spinner({ label = 'Loading…' }) {
+  return (
+    <div className="flex items-center gap-2 px-5 py-8 text-sm text-slate">
+      <Loader2 size={16} className="animate-spin" />
+      {label}
+    </div>
+  )
+}
+
+export function EmptyState({ icon: Icon = Info, title, children }) {
+  return (
+    <div className="px-5 py-10 text-center">
+      <Icon size={22} className="mx-auto mb-2 text-slate-light" />
+      <p className="text-sm font-medium text-marine">{title}</p>
+      {children && <p className="mx-auto mt-1 max-w-sm text-sm text-slate">{children}</p>}
+    </div>
+  )
+}
+
+const ALERT_STYLES = {
+  info: { wrap: 'border-coolant-200 bg-coolant-50 text-marine', icon: Info },
+  success: { wrap: 'border-emerald-200 bg-emerald-50 text-emerald-900', icon: Check },
+  warning: { wrap: 'border-amber-200 bg-amber-50 text-amber-900', icon: AlertTriangle },
+  error: { wrap: 'border-red-200 bg-red-50 text-red-800', icon: AlertTriangle },
+}
+
+export function Alert({ tone = 'info', title, children, onDismiss }) {
+  const { wrap, icon: Icon } = ALERT_STYLES[tone] ?? ALERT_STYLES.info
+  return (
+    <div className={`flex gap-2.5 rounded-xl border px-4 py-3 text-sm ${wrap}`}>
+      <Icon size={16} className="mt-0.5 shrink-0" />
+      <div className="min-w-0 flex-1">
+        {title && <p className="font-medium">{title}</p>}
+        {children && <div className={title ? 'mt-0.5' : ''}>{children}</div>}
+      </div>
+      {onDismiss && (
+        <button onClick={onDismiss} className="shrink-0 opacity-60 hover:opacity-100">
+          <X size={15} />
+        </button>
+      )}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Overlay                                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Full-screen on mobile, centred dialog on desktop — the technician flows use
+ * this as a bottom sheet and the desktop portals as a modal.
+ */
+export function Sheet({ open, onClose, title, subtitle, children, footer, wide = false }) {
+  useEffect(() => {
+    if (!open) return undefined
+    const onKey = (e) => e.key === 'Escape' && onClose?.()
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open, onClose])
+
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-marine/40 backdrop-blur-[2px] sm:items-center sm:p-6">
+      <div
+        className={`flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-sheet sm:rounded-2xl ${
+          wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'
+        }`}
+      >
+        <div className="flex items-start justify-between gap-3 border-b border-slate-line px-5 py-4">
+          <div>
+            <h2 className="font-display text-base font-semibold text-marine">{title}</h2>
+            {subtitle && <p className="mt-0.5 text-xs text-slate">{subtitle}</p>}
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1 text-slate hover:bg-frost">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+
+        {footer && (
+          <div className="border-t border-slate-line bg-frost/60 px-5 py-3 pb-safe sm:pb-3">
+            {footer}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Misc                                                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * KPI tile. A headline count is a number, not a one-bar chart — the icon
+ * carries the category and the value stays in proportional figures so it
+ * doesn't read loose at display size.
+ */
+export function Stat({ label, value, sub, icon: Icon, tint = 'text-coolant bg-coolant-50' }) {
+  return (
+    <div className="rounded-xl border border-slate-line bg-white p-4 shadow-tile transition hover:shadow-lift">
+      {Icon && (
+        <div className={`mb-2.5 flex h-9 w-9 items-center justify-center rounded-lg ${tint}`}>
+          <Icon size={18} strokeWidth={2} />
+        </div>
+      )}
+      <p
+        className={`whitespace-nowrap font-semibold leading-none text-marine ${
+          String(value).length > 5 ? 'text-xl' : 'text-[28px]'
+        }`}
+      >
+        {value}
+      </p>
+      <p className="mt-1.5 text-xs font-medium text-slate">{label}</p>
+      {sub && <p className="mt-1 text-[11px] text-slate-light">{sub}</p>}
+    </div>
+  )
+}
+
+/**
+ * A titled section that collapses — the technician's job record is a stack of
+ * these, so a phone screen opens on the part that matters and the rest stays
+ * one tap away.
+ */
+export function Section({ title, icon: Icon, children, defaultOpen = true, meta }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-line bg-white shadow-card">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 px-4 py-3 text-left"
+        aria-expanded={open}
+      >
+        {Icon && <Icon size={15} className="shrink-0 text-coolant" />}
+        <span className="flex-1 font-display text-sm font-semibold text-marine-600">{title}</span>
+        {meta && <span className="text-[11px] text-slate">{meta}</span>}
+        <ChevronDown
+          size={17}
+          className={`shrink-0 text-slate-light transition ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open && <div className="border-t border-slate-line px-4 py-3">{children}</div>}
+    </div>
+  )
+}
+
+/** A label/value row, as used inside `Section`. */
+export function Row({ label, children, className = '' }) {
+  return (
+    <div className={`flex items-baseline justify-between gap-4 py-1.5 ${className}`}>
+      <span className="shrink-0 text-xs text-slate">{label}</span>
+      <span className="min-w-0 text-right text-sm text-marine">{children}</span>
+    </div>
+  )
+}
+
+export function Pill({ children, tone = 'neutral' }) {
+  const tones = {
+    neutral: 'bg-frost-deep text-slate',
+    accent: 'bg-coolant-50 text-coolant-700',
+    warning: 'bg-amber-50 text-amber-700',
+    danger: 'bg-red-50 text-red-700',
+    success: 'bg-emerald-50 text-emerald-700',
+  }
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${tones[tone]}`}
+    >
+      {children}
+    </span>
+  )
+}
