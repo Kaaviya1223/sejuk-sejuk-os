@@ -96,8 +96,13 @@ function Shell() {
   if (isTechnician) {
     return (
       <div className="min-h-screen bg-frost">
-        <header className="sticky top-0 z-30 bg-brand-sweep px-4 py-3 shadow-card">
-          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
+        <header className="sticky top-0 z-30 overflow-hidden bg-brand-sweep px-4 py-3 shadow-lift">
+          <span aria-hidden className="pointer-events-none absolute inset-0 bg-brand-glow" />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-dot-grid opacity-50 [background-size:16px_16px]"
+          />
+          <div className="relative mx-auto flex max-w-2xl items-center justify-between gap-3">
             <Wordmark tone="light" />
             <div className="w-44">
               <RoleSwitcher compact />
@@ -204,8 +209,8 @@ function Shell() {
 /** Shared by the desktop rail and the mobile slide-over. */
 function SidebarBody({ items, view, onSelect, onReset, name }) {
   return (
-    <>
-      <div className="flex items-center justify-between gap-2 bg-white/10 px-4 py-3">
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-white/10 px-4 py-3">
         <p className="truncate text-sm font-medium text-white">
           Welcome, {String(name).split(/[\s(]/)[0]}
         </p>
@@ -219,7 +224,7 @@ function SidebarBody({ items, view, onSelect, onReset, name }) {
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-2">
+      <nav className="relative flex-1 space-y-1 overflow-y-auto p-3">
         {items.map((item) => {
           const Icon = item.icon
           const active = view === item.key
@@ -227,23 +232,41 @@ function SidebarBody({ items, view, onSelect, onReset, name }) {
             <button
               key={item.key}
               onClick={() => onSelect(item.key)}
-              className={`flex w-full items-center gap-3 border-l-[3px] px-4 py-3 text-left text-sm transition ${
+              className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 text-left text-sm transition ${
                 active
-                  ? 'border-white bg-white/20 font-medium text-white'
-                  : 'border-transparent text-white/75 hover:bg-white/10 hover:text-white'
+                  ? 'bg-white/20 font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] ring-1 ring-inset ring-white/25'
+                  : 'text-white/75 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <Icon size={17} strokeWidth={2} />
+              {active && (
+                <span
+                  aria-hidden
+                  className="absolute inset-y-1.5 left-0 w-1 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                />
+              )}
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${
+                  active ? 'bg-white/25' : 'bg-white/10 group-hover:bg-white/20'
+                }`}
+              >
+                <Icon size={16} strokeWidth={2} />
+              </span>
               {item.label}
             </button>
           )
         })}
       </nav>
 
-      <div className="border-t border-white/15 p-3">
+      {/* A soft light pooling at the base of the column. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(20rem_10rem_at_50%_120%,rgba(255,255,255,0.22),transparent_70%)]"
+      />
+
+      <div className="relative border-t border-white/15 p-3">
         <RoleSwitcher />
       </div>
-    </>
+    </div>
   )
 }
 

@@ -70,42 +70,42 @@ function Overview({ onNavigate, today }) {
           label="Total orders"
           value={orders.length}
           icon={ClipboardList}
-          tint="text-marine-600 bg-marine-100"
+          tone="brand"
         />
         <Stat
           loading={loading}
           label="New"
           value={by('New')}
           icon={Inbox}
-          tint="text-slate bg-frost-deep"
+          tone="slate"
         />
         <Stat
           loading={loading}
           label="Assigned"
           value={by('Assigned')}
           icon={UserCheck}
-          tint="text-copper bg-copper/10"
+          tone="copper"
         />
         <Stat
           loading={loading}
           label="In Progress"
           value={by('In Progress')}
           icon={PlayCircle}
-          tint="text-amber-600 bg-amber-50"
+          tone="amber"
         />
         <Stat
           loading={loading}
           label="Awaiting review"
           value={by('Job Done')}
           icon={Clock}
-          tint="text-coolant bg-coolant-50"
+          tone="accent"
         />
         <Stat
           loading={loading}
           label="Closed"
           value={by('Closed')}
           icon={CheckCircle2}
-          tint="text-emerald-600 bg-emerald-50"
+          tone="emerald"
         />
         <Stat
           loading={loading}
@@ -113,7 +113,7 @@ function Overview({ onNavigate, today }) {
           value={busyTechs}
           sub={`of ${technicians.length}`}
           icon={Users}
-          tint="text-marine-600 bg-marine-100"
+          tone="brand"
         />
         <Stat
           loading={loading}
@@ -121,7 +121,7 @@ function Overview({ onNavigate, today }) {
           value={shortMoney(completedValue)}
           sub={`${completed.length} jobs`}
           icon={Wallet}
-          tint="text-coolant bg-coolant-50"
+          tone="accent"
         />
       </div>
 

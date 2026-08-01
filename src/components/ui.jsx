@@ -13,16 +13,32 @@ import { useEffect, useState } from 'react'
 export function PageHeader({ title, subtitle, actions, deep = false }) {
   return (
     <div
-      className={`bleed bg-brand-sweep px-4 pt-5 sm:px-6 lg:px-8 ${
-        deep ? 'pb-20' : 'mb-6 pb-5'
+      className={`bleed relative isolate overflow-hidden bg-brand-sweep px-4 pt-6 sm:px-6 lg:px-8 ${
+        deep ? 'pb-20' : 'mb-6 pb-6'
       }`}
     >
+      {/* Decorative layers: two soft lights, a fine dot grid, and a pair of
+          outsized rings bleeding off the right edge. */}
+      <span aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-brand-glow" />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-dot-grid opacity-60 [background-size:18px_18px]"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full border border-white/15"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-4 -top-10 -z-10 h-44 w-44 rounded-full border border-white/10"
+      />
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
+          <h1 className="font-display text-xl font-semibold tracking-tight text-white drop-shadow-sm sm:text-2xl">
             {title}
           </h1>
-          {subtitle && <p className="mt-0.5 text-sm text-white/75">{subtitle}</p>}
+          {subtitle && <p className="mt-1 text-sm text-white/80">{subtitle}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
@@ -33,7 +49,7 @@ export function PageHeader({ title, subtitle, actions, deep = false }) {
 export function Card({ children, className = '', padded = true }) {
   return (
     <div
-      className={`rounded-xl border border-slate-line bg-white shadow-card ${
+      className={`overflow-hidden rounded-2xl border border-slate-line bg-white shadow-tile transition duration-200 hover:shadow-lift ${
         padded ? 'p-5' : ''
       } ${className}`}
     >
@@ -49,11 +65,16 @@ export function Card({ children, className = '', padded = true }) {
 export function CardHeader({ title, subtitle, actions, divided = true }) {
   return (
     <div
-      className={`flex items-start justify-between gap-3 px-5 py-4 ${
+      className={`flex items-start justify-between gap-3 bg-gradient-to-b from-frost/50 to-transparent px-5 py-4 ${
         divided ? 'border-b border-slate-line' : ''
       }`}
     >
-      <div>
+      <div className="min-w-0">
+        {/* A short brand rule above the title — the card's own signature. */}
+        <span
+          aria-hidden
+          className="mb-2 block h-1 w-8 rounded-full bg-gradient-to-r from-coolant to-marine-500"
+        />
         <h2 className="font-display text-base font-semibold tracking-tight text-marine-600">
           {title}
         </h2>
@@ -185,8 +206,16 @@ export function SkeletonRows({ rows = 5 }) {
 export function EmptyState({ icon: Icon = Info, title, children }) {
   return (
     <div className="px-5 py-12 text-center">
-      <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-frost-deep text-slate">
-        <Icon size={20} />
+      {/* Halo, ring, chip — an empty list is the most-seen screen in a new
+          deployment, so it gets a little ceremony. */}
+      <span className="relative mx-auto mb-4 flex h-14 w-14 items-center justify-center">
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-full bg-gradient-to-br from-coolant/25 to-marine-500/20 blur-md"
+        />
+        <span className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white bg-gradient-to-br from-white to-frost-deep text-coolant shadow-tile">
+          <Icon size={21} />
+        </span>
       </span>
       <p className="text-sm font-medium text-marine">{title}</p>
       {children && <p className="mx-auto mt-1 max-w-sm text-sm text-slate">{children}</p>}
@@ -279,19 +308,40 @@ export function Sheet({ open, onClose, title, subtitle, children, footer, wide =
  * carries the category and the value stays in proportional figures so it
  * doesn't read loose at display size.
  */
-export function Stat({
-  label,
-  value,
-  sub,
-  icon: Icon,
-  loading = false,
-  tint = 'text-coolant bg-coolant-50',
-}) {
+/**
+ * Tile tones. Each is a gradient chip plus a matching glow, so the icon reads
+ * as an object sitting on the card and the row of tiles carries colour.
+ */
+const TONES = {
+  brand: { chip: 'from-marine-500 to-marine-600', glow: 'shadow-glow-blue', rail: 'bg-marine-500' },
+  accent: { chip: 'from-coolant to-coolant-600', glow: 'shadow-glow-green', rail: 'bg-coolant' },
+  amber: { chip: 'from-amber-400 to-amber-600', glow: 'shadow-glow-amber', rail: 'bg-amber-500' },
+  copper: { chip: 'from-[#D98B6E] to-copper', glow: 'shadow-glow-copper', rail: 'bg-copper' },
+  emerald: {
+    chip: 'from-emerald-400 to-emerald-600',
+    glow: 'shadow-glow-green',
+    rail: 'bg-emerald-500',
+  },
+  slate: { chip: 'from-slate-light to-slate', glow: 'shadow-glow-slate', rail: 'bg-slate' },
+}
+
+export function Stat({ label, value, sub, icon: Icon, loading = false, tone = 'accent' }) {
+  const { chip, glow, rail } = TONES[tone] ?? TONES.accent
+
   return (
-    <div className="rounded-xl border border-slate-line bg-white p-4 shadow-tile transition hover:shadow-lift">
+    <div className="group relative overflow-hidden rounded-2xl border border-slate-line bg-card-sheen p-4 shadow-tile transition duration-200 hover:-translate-y-0.5 hover:shadow-lift">
+      {/* A colour rail on the top edge, and the tone bleeding in from the corner. */}
+      <span aria-hidden className={`absolute inset-x-0 top-0 h-1 ${rail} opacity-80`} />
+      <span
+        aria-hidden
+        className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${chip} opacity-[0.07] transition-opacity duration-200 group-hover:opacity-[0.14]`}
+      />
+
       {Icon && (
-        <div className={`mb-2.5 flex h-9 w-9 items-center justify-center rounded-lg ${tint}`}>
-          <Icon size={18} strokeWidth={2} />
+        <div
+          className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-white ${chip} ${glow}`}
+        >
+          <Icon size={19} strokeWidth={2} />
         </div>
       )}
 
@@ -299,7 +349,7 @@ export function Stat({
         <Skeleton className="h-7 w-14 rounded" />
       ) : (
         <p
-          className={`whitespace-nowrap font-semibold leading-none text-marine ${
+          className={`whitespace-nowrap font-semibold leading-none tracking-tight text-marine ${
             String(value).length > 5 ? 'text-xl' : 'text-[28px]'
           }`}
         >

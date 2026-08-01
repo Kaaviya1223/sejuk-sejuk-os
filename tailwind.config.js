@@ -47,12 +47,24 @@ export default {
         'brand-sweep': 'linear-gradient(105deg, #3E9B6B 0%, #2E7FA8 52%, #2A6DB0 100%)',
         // Sidebar: blue at the top, settling into green at the base.
         'brand-column': 'linear-gradient(180deg, #1E5591 0%, #2E7FA8 38%, #3E9B6B 100%)',
+        // Decorative layers for the band: two soft lights and a fine dot grid.
+        'brand-glow':
+          'radial-gradient(60rem 22rem at 12% -40%, rgba(255,255,255,0.30), transparent 60%), radial-gradient(38rem 20rem at 88% 130%, rgba(255,255,255,0.20), transparent 60%)',
+        'dot-grid': 'radial-gradient(rgba(255,255,255,0.16) 1px, transparent 1px)',
+        // A pale wash so a white card is never quite flat.
+        'card-sheen': 'linear-gradient(180deg, #FFFFFF 0%, #FBFCFE 62%, #F5F8FC 100%)',
       },
       boxShadow: {
         card: '0 1px 2px rgba(23, 63, 107, 0.04), 0 1px 3px rgba(23, 63, 107, 0.07)',
-        lift: '0 4px 14px rgba(23, 63, 107, 0.10)',
+        lift: '0 10px 26px -6px rgba(23, 63, 107, 0.18), 0 3px 8px rgba(23, 63, 107, 0.08)',
         sheet: '0 -4px 24px rgba(23, 63, 107, 0.14)',
-        tile: '0 1px 2px rgba(23, 63, 107, 0.06), 0 4px 10px rgba(23, 63, 107, 0.06)',
+        tile: '0 1px 2px rgba(23, 63, 107, 0.06), 0 6px 16px -6px rgba(23, 63, 107, 0.14)',
+        // Coloured glows so an icon chip sits *on* the card rather than in it.
+        'glow-blue': '0 6px 16px -4px rgba(42, 109, 176, 0.45)',
+        'glow-green': '0 6px 16px -4px rgba(62, 155, 107, 0.45)',
+        'glow-amber': '0 6px 16px -4px rgba(217, 119, 6, 0.40)',
+        'glow-copper': '0 6px 16px -4px rgba(193, 105, 79, 0.40)',
+        'glow-slate': '0 6px 16px -4px rgba(90, 107, 128, 0.35)',
       },
     },
   },

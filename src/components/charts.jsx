@@ -181,19 +181,40 @@ export function CompletionMeter({ done, total, caption, loading = false }) {
   return (
     <div className="flex flex-col items-center">
       <div className="relative">
-        <svg viewBox="0 0 180 180" className="h-40 w-40" role="img"
-          aria-label={`${done} of ${total} orders completed`}>
+        <svg
+          viewBox="0 0 180 180"
+          className="h-40 w-40"
+          role="img"
+          aria-label={`${done} of ${total} orders completed`}
+        >
+          <defs>
+            {/* Two steps of the same green — depth without changing the hue
+                the meter encodes. */}
+            <linearGradient id="meter-fill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#54B683" />
+              <stop offset="100%" stopColor="#2A724C" />
+            </linearGradient>
+            <filter id="meter-glow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
           <circle cx="90" cy="90" r={r} fill="none" stroke="#D8EDE2" strokeWidth="16" />
           <circle
             cx="90"
             cy="90"
             r={r}
             fill="none"
-            stroke="#3E9B6B"
+            stroke="url(#meter-fill)"
             strokeWidth="16"
             strokeLinecap="round"
             strokeDasharray={`${circumference * ratio} ${circumference}`}
             transform="rotate(-90 90 90)"
+            filter="url(#meter-glow)"
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">

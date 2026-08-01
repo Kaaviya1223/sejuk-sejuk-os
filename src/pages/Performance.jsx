@@ -146,7 +146,7 @@ function Performance() {
           value={board.jobs}
           sub={label}
           icon={CheckCircle2}
-          tint="text-coolant bg-coolant-50"
+          tone="accent"
         />
         <Stat
           loading={loading}
@@ -154,7 +154,7 @@ function Performance() {
           value={shortMoney(board.value)}
           sub={label}
           icon={Wallet}
-          tint="text-marine-600 bg-marine-100"
+          tone="brand"
         />
         <Stat
           loading={loading}
@@ -162,7 +162,7 @@ function Performance() {
           value={board.postponed}
           sub="reschedules in period"
           icon={RotateCcw}
-          tint="text-amber-600 bg-amber-50"
+          tone="amber"
         />
         <Stat
           loading={loading}
@@ -170,7 +170,7 @@ function Performance() {
           value={board.rows[0]?.jobs ? board.rows[0].name : '—'}
           sub={board.rows[0]?.jobs ? `${board.rows[0].jobs} jobs` : 'nothing completed yet'}
           icon={Trophy}
-          tint="text-coolant bg-coolant-50"
+          tone="accent"
         />
       </div>
 

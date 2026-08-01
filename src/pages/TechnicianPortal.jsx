@@ -279,11 +279,18 @@ function JobCard({ order, busy, onStart, onComplete, onPostpone }) {
   const started = order.status === 'In Progress'
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-line bg-white shadow-card">
-      {/* Ticket header, in the brand green so the card reads at arm's length. */}
-      <div className="flex items-center justify-between gap-3 bg-coolant px-4 py-2.5">
-        <span className="tabular-nums text-sm font-semibold text-white">{order.order_no}</span>
-        <div className="flex items-center gap-2">
+    <div className="overflow-hidden rounded-2xl border border-slate-line bg-white shadow-tile transition duration-200 hover:shadow-lift">
+      {/* Ticket header, in the brand gradient so the card reads at arm's length. */}
+      <div className="relative flex items-center justify-between gap-3 overflow-hidden bg-brand-sweep px-4 py-3">
+        <span aria-hidden className="pointer-events-none absolute inset-0 bg-brand-glow" />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-dot-grid opacity-50 [background-size:14px_14px]"
+        />
+        <span className="relative tabular-nums text-sm font-semibold tracking-wide text-white">
+          {order.order_no}
+        </span>
+        <div className="relative flex items-center gap-2">
           {order.reschedule_count > 0 && (
             <span className="rounded-full bg-white/20 px-2 py-0.5 text-[11px] text-white">
               postponed ×{order.reschedule_count}
