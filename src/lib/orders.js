@@ -424,7 +424,7 @@ export async function completeJob(order, form, actor) {
     },
   })
 
-  const notifications = await buildJobDoneNotifications(data)
+  const notifications = await triggerJobDoneNotifications(data)
 
   return {
     order: data,
@@ -464,6 +464,32 @@ export async function sendAssignmentNotification(order, technicians = []) {
     phone: tech?.phone,
   })
   return [await recordNotification(notification)]
+}
+
+/**
+ * Module 3 — asks the server-side trigger to fire.
+ *
+ * The endpoint re-reads the order and checks `status = 'Job Done'` for itself,
+ * which is the point: the condition is enforced where it can't be bypassed.
+ * If it is unreachable — no serverless runtime on a static host, or the request
+ * fails — the same messages are built here instead, so a technician standing in
+ * a customer's hallway never loses their write-up to a missing side effect.
+ */
+async function triggerJobDoneNotifications(order) {
+  try {
+    const res = await fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: order.id }),
+    })
+    if (!res.ok) throw new Error(`trigger responded ${res.status}`)
+
+    const { notifications } = await res.json()
+    if (notifications?.length) return notifications
+    throw new Error('trigger returned nothing')
+  } catch {
+    return buildJobDoneNotifications(order)
+  }
 }
 
 /**

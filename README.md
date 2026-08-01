@@ -5,10 +5,11 @@ creates a service order, a technician completes the job in the field, and the
 record — evidence photos, final amount, payment, audit trail — comes back to
 the office.
 
-**Scope of this submission: Module 1 (Admin Portal), Module 2 (Technician
-Portal) — both including their WhatsApp bonuses — and the AI Operations Query
-Window.** Module 3's server-side trigger and the KPI leaderboard are not built;
-see [What is not built](#what-is-not-built).
+**Scope of this submission: Modules 1, 2 and 3, the KPI dashboard, and the AI
+Operations Query Window** — including every WhatsApp bonus. Of the optional
+advanced AI challenges, operational insight is covered; document understanding
+and the workflow supervisor are not. See
+[What is not built](#what-is-not-built).
 
 ---
 
@@ -86,6 +87,30 @@ bar with safe-area padding.
 - **Postpone / reschedule** with a reason, which increments a counter.
 - **WhatsApp feedback message to the customer** (bonus) plus a completion notice
   for the manager / accounts, both rendered on submission.
+
+### Module 3 — WhatsApp notification trigger
+
+[`api/notify.js`](api/notify.js) is a serverless endpoint that fires the
+customer feedback request and the manager completion notice. It takes an order
+id, **re-reads the order and checks `status = 'Job Done'` itself** rather than
+believing the caller, so a client cannot fire "your job is complete" at a
+customer whose job is still open. It refuses with a 409 that names the actual
+status.
+
+It renders from the same template module the UI previews from, records each
+message to `notifications`, and returns the deep links. A second call for the
+same order returns what was already sent instead of notifying twice; `force`
+overrides that for a deliberate resend. Job completion calls this endpoint and
+falls back to building the messages client-side if it is unreachable, so a
+technician never loses a write-up to a missing side effect.
+
+### Bonus — KPI dashboard
+
+A **Performance** page for Admin and Manager: jobs completed, value collected,
+postponements, and a leaderboard ranked by jobs with value as the tie-break.
+The period selector covers this week, last week, this month and all time —
+weeks start Monday. Completed jobs are dated by completion, everything else by
+when it was raised.
 
 ### AI Module — Operations Query Window
 
@@ -178,8 +203,9 @@ src/
                OrderList · OrderDetailSheet · JobCompletionSheet
                WhatsAppPreview · StatusBadge · StatusTrack
   pages/       Overview.jsx · AdminOrders.jsx · TechnicianPortal.jsx
-               OpsAssistant.jsx (AI query window)
+               Performance.jsx (KPI) · OpsAssistant.jsx (AI query window)
 api/
+  notify.js    Module 3: the Job Done WhatsApp trigger
   query.js     the AI endpoint: classify → retrieve → compute → phrase
 supabase/
   schema.sql   the one-paste migration
@@ -191,7 +217,9 @@ supabase/
 
 Implemented as the Module 1 and Module 2 **bonuses** — a technician job brief
 on assignment, and a customer feedback request plus manager/accounts notice on
-completion. Messages are rendered from templates in `src/lib/whatsapp.js` and
+completion. The completion pair is fired by the Module 3 server-side trigger,
+which checks the status condition itself; see
+[`api/notify.js`](api/notify.js). Messages are rendered from templates in `src/lib/whatsapp.js` and
 delivered as `wa.me` deep links with the text pre-filled.
 
 The message is always shown in full next to the send button rather than hidden
@@ -320,19 +348,16 @@ does support — it does not guess.
 
 ## What is not built
 
-- **Module 3** — the server-side WhatsApp trigger. The *messages* are built and
-  logged (Modules 1 and 2 bonuses), but generation is client-side; there is no
-  serverless endpoint firing on a status change, and no WhatsApp Business API
-  delivery.
-- **KPI dashboard** — the dashboard carries status mix, completion rate and
-  open jobs per technician, but not the leaderboard the brief describes (jobs
-  completed, total amount, postpone counts, weekly). The data is captured
-  (`reschedule_count`, `final_amount`, `completed_by`, `completed_at`) and the
-  assistant already computes the leaderboard server-side — it just isn't drawn
-  as a page.
+- **Real WhatsApp delivery.** The trigger generates, records and returns a
+  `wa.me` deep link; a human still taps send. There are no WhatsApp Business
+  API credentials for this build, and the brief accepts a deep link. Swapping in
+  a provider means replacing one function in `api/notify.js`.
 - **Advanced AI challenges** — document understanding and the workflow
   supervisor. The third one, operational insight, is covered: the
   `technician_workload` intent flags anyone running 30% above the team average.
+- **A manager review queue.** Managers review and close from the order detail
+  sheet, which the state machine drives correctly, but there is no page that
+  gathers everything sitting at `Job Done` into one queue.
 
 ---
 
