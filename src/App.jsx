@@ -8,6 +8,7 @@ import {
   Menu,
   Power,
   Snowflake,
+  Sparkles,
   Wrench,
   X,
 } from 'lucide-react'
@@ -20,17 +21,20 @@ import { dateOnly } from './lib/format.js'
 
 import Overview from './pages/Overview.jsx'
 import AdminOrders from './pages/AdminOrders.jsx'
+import OpsAssistant from './pages/OpsAssistant.jsx'
 import TechnicianPortal from './pages/TechnicianPortal.jsx'
 
 const NAV = [
   { key: 'overview', label: 'Dashboard', icon: LayoutDashboard, roles: ['Admin', 'Manager'] },
   { key: 'orders', label: 'Orders', icon: ClipboardList, roles: ['Admin', 'Manager'] },
+  { key: 'assistant', label: 'Assistant', icon: Sparkles, roles: ['Manager'] },
   { key: 'jobs', label: 'My Jobs', icon: Wrench, roles: ['Technician'] },
 ]
 
 const PAGES = {
   overview: Overview,
   orders: AdminOrders,
+  assistant: OpsAssistant,
   jobs: TechnicianPortal,
 }
 

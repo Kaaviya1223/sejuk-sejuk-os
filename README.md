@@ -5,10 +5,10 @@ creates a service order, a technician completes the job in the field, and the
 record — evidence photos, final amount, payment, audit trail — comes back to
 the office.
 
-**Scope of this submission: Module 1 (Admin Portal) and Module 2 (Technician
-Portal), including both of their WhatsApp bonuses.** Modules 3, the KPI
-dashboard and the AI modules are not built — see
-[What is not built](#what-is-not-built).
+**Scope of this submission: Module 1 (Admin Portal), Module 2 (Technician
+Portal) — both including their WhatsApp bonuses — and the AI Operations Query
+Window.** Module 3's server-side trigger and the KPI leaderboard are not built;
+see [What is not built](#what-is-not-built).
 
 ---
 
@@ -87,6 +87,14 @@ bar with safe-area padding.
 - **WhatsApp feedback message to the customer** (bonus) plus a completion notice
   for the manager / accounts, both rendered on submission.
 
+### AI Module — Operations Query Window
+
+A manager-only Assistant page answering four kinds of operational question from
+live data. The model classifies the question and phrases the result; the query
+and every number in between are server-side code. Each answer shows the exact
+retrieval behind it. Full detail, including what it cannot do, is in
+[AI module](#ai-module--operations-query-window).
+
 ---
 
 ## Tech stack
@@ -98,6 +106,7 @@ bar with safe-area padding.
 | Database | Supabase (Postgres + PostgREST) |
 | File storage | Supabase Storage |
 | Icons | lucide-react |
+| AI | Google Gemini via a serverless function in `api/` |
 | Login | Mock session with role switcher |
 | Deployment | Vercel-ready static build |
 
@@ -169,6 +178,9 @@ src/
                OrderList · OrderDetailSheet · JobCompletionSheet
                WhatsAppPreview · StatusBadge · StatusTrack
   pages/       Overview.jsx · AdminOrders.jsx · TechnicianPortal.jsx
+               OpsAssistant.jsx (AI query window)
+api/
+  query.js     the AI endpoint: classify → retrieve → compute → phrase
 supabase/
   schema.sql   the one-paste migration
 ```
@@ -191,6 +203,77 @@ delivery is a manual tap.
 Numbers are normalised to the `wa.me` format (`012-345 6789` → `60123456789`).
 Orders without a phone number still produce a working link — WhatsApp opens and
 asks the sender to pick a contact.
+
+---
+
+## AI module — Operations Query Window
+
+A manager-only **Assistant** page. Ask a question in English, get an answer
+computed from the database.
+
+### How it works
+
+The endpoint is [`api/query.js`](api/query.js), a serverless function. Four
+steps, and the model is only trusted with two of them:
+
+```
+question → 1. classify (model)  → intent + parameters
+         → 2. retrieve (server) → one declared query, fixed columns, bounded window
+         → 3. compute (server)  → counts and totals, in JavaScript
+         → 4. phrase (model)    → a sentence around those numbers
+```
+
+**The model never sees the database and never produces a figure.** It turns a
+sentence into an intent, and later turns computed facts into prose. Everything
+between is ordinary server code. A hallucination can therefore change the
+wording of an answer but never the number in it.
+
+**Retrieval is controlled, not open-ended.** Each intent declares the table, the
+exact column list, the date window and a row cap; nothing selects `*`, so a
+customer's phone number cannot reach the model because someone asked about job
+counts. A technician name coming back from the classifier is only used after it
+matches a row in `technicians` — the model cannot invent a filter value.
+
+**The answer shows its own evidence.** Every response carries the retrieval
+descriptor — table, columns, filters, row count — and the UI renders it under
+"Data used for this answer", along with the rows themselves. A manager acting on
+"Bala is overloaded" can see the jobs that claim was counted from.
+
+### What you can ask
+
+| Intent | Example |
+| --- | --- |
+| `jobs_by_technician` | What jobs did Ali complete last week? |
+| `top_technician` | Which technician completed the most jobs this week? |
+| `jobs_completed_count` | How many jobs were completed today? |
+| `technician_workload` | Which technician might be overloaded this week? |
+
+Periods understood: today, yesterday, this week, last week, this month, all
+time. Weeks start on Monday and "today" means today in UTC+8.
+
+Anything else is refused before a query runs, with a list of what the assistant
+does support — it does not guess.
+
+### Limitations
+
+- **Four intents, and that is the whole surface.** "Which branch is busiest?"
+  or "show me unassigned orders" are not supported. Adding one is adding an
+  entry to `INTENTS` with its own declared query — deliberately not a
+  free-form text-to-SQL layer, which is what would make an unbounded question
+  set possible and an unbounded blast radius with it.
+- **Completed work only.** Every intent filters to `Job Done`, `Reviewed`,
+  `Closed`, so open jobs are invisible to it.
+- **No conversation memory.** Each question is answered on its own; "and what
+  about last month?" will not resolve.
+- **Free-tier quota.** Google AI Studio's free tier runs out quickly. When it
+  does, the endpoint routes by keyword and phrases the answer from a template
+  instead — the numbers are identical because they were never the model's to
+  begin with. The response marks this (`routedBy`, `phrasedBy`) and the UI shows
+  a badge, so a degraded answer is never passed off as a full one.
+- **200-row cap per query.** Beyond that the counts would under-report; at real
+  volume this belongs in a Postgres aggregate rather than a row fetch.
+- **No auth on the endpoint.** It answers anyone who can POST to it. Real
+  deployment needs the session's role checked server-side.
 
 ---
 
@@ -237,23 +320,19 @@ asks the sender to pick a contact.
 
 ## What is not built
 
-Stopped at Module 2 as scoped. Not implemented:
-
 - **Module 3** — the server-side WhatsApp trigger. The *messages* are built and
   logged (Modules 1 and 2 bonuses), but generation is client-side; there is no
   serverless endpoint firing on a status change, and no WhatsApp Business API
   delivery.
-- **KPI dashboard** — technician leaderboard, jobs completed, total amount,
-  reschedule counts. The data it needs is captured (`reschedule_count`,
-  `final_amount`, `completed_by`, `completed_at`).
-- **AI modules** — the operations query assistant, workflow supervisor,
-  document understanding and operational insight.
-
-`api/query.js` and `src/components/ManagerPortal.jsx` are an earlier
-exploration of the AI module. They are left untouched and are **not wired into
-the app**. `vite.config.js` includes a dev-server plugin that serves `/api/*`
-handlers locally the same way Vercel does in production, so that work can be
-picked up without re-plumbing.
+- **KPI dashboard** — the dashboard carries status mix, completion rate and
+  open jobs per technician, but not the leaderboard the brief describes (jobs
+  completed, total amount, postpone counts, weekly). The data is captured
+  (`reschedule_count`, `final_amount`, `completed_by`, `completed_at`) and the
+  assistant already computes the leaderboard server-side — it just isn't drawn
+  as a page.
+- **Advanced AI challenges** — document understanding and the workflow
+  supervisor. The third one, operational insight, is covered: the
+  `technician_workload` intent flags anyone running 30% above the team average.
 
 ---
 
