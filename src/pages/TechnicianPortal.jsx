@@ -358,7 +358,7 @@ function JobCard({ order, busy, onStart, onComplete, onPostpone }) {
               Start job
             </Button>
           ) : (
-            <Button size="lg" variant="accent" className="flex-1" onClick={onComplete}>
+            <Button size="lg" variant="success" className="flex-1" onClick={onComplete}>
               <CheckCircle2 size={17} />
               Complete job
             </Button>

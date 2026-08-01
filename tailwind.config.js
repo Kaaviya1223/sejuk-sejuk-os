@@ -17,14 +17,29 @@ export default {
           500: '#2A6DB0',
           100: '#E8F0FA',
         },
-        // Accent. Field-service green — sidebar base, success, active nav.
+        /**
+         * Secondary. Aircon-cold teal: the company is called "Sejuk" — cool —
+         * so the brand is the temperature it sells. Teal also keeps the chrome
+         * clear of green, which is reserved below for "finished".
+         */
         coolant: {
-          DEFAULT: '#3E9B6B',
-          50: '#EDF7F1',
-          100: '#D8EDE2',
-          200: '#A9D9BE',
-          600: '#348A5D',
-          700: '#2A724C',
+          DEFAULT: '#0E8C7B',
+          50: '#E7F5F2',
+          100: '#CDEAE5',
+          200: '#9BD6CD',
+          600: '#0B7466',
+          700: '#095C51',
+        },
+        /**
+         * Success. Used *only* where something is complete — the finish button
+         * and the closed state. Nothing decorative may wear it, or it stops
+         * meaning anything.
+         */
+        success: {
+          DEFAULT: '#15803D',
+          50: '#ECFAF0',
+          600: '#12692F',
+          700: '#0F5426',
         },
         // Muted body text and hairline borders.
         slate: {
@@ -43,10 +58,10 @@ export default {
         mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       backgroundImage: {
-        // The dashboard band: green at the near edge, blue at the far one.
-        'brand-sweep': 'linear-gradient(105deg, #3E9B6B 0%, #2E7FA8 52%, #2A6DB0 100%)',
-        // Sidebar: blue at the top, settling into green at the base.
-        'brand-column': 'linear-gradient(180deg, #1E5591 0%, #2E7FA8 38%, #3E9B6B 100%)',
+        // The dashboard band: teal at the near edge, deep blue at the far one.
+        'brand-sweep': 'linear-gradient(105deg, #0E8C7B 0%, #157B90 48%, #1E5591 100%)',
+        // Sidebar: deep blue at the top, settling into teal at the base.
+        'brand-column': 'linear-gradient(180deg, #1E5591 0%, #157B90 45%, #0E8C7B 100%)',
         // Decorative layers for the band: two soft lights and a fine dot grid.
         'brand-glow':
           'radial-gradient(60rem 22rem at 12% -40%, rgba(255,255,255,0.30), transparent 60%), radial-gradient(38rem 20rem at 88% 130%, rgba(255,255,255,0.20), transparent 60%)',
@@ -61,7 +76,8 @@ export default {
         tile: '0 1px 2px rgba(23, 63, 107, 0.06), 0 6px 16px -6px rgba(23, 63, 107, 0.14)',
         // Coloured glows so an icon chip sits *on* the card rather than in it.
         'glow-blue': '0 6px 16px -4px rgba(42, 109, 176, 0.45)',
-        'glow-green': '0 6px 16px -4px rgba(62, 155, 107, 0.45)',
+        'glow-teal': '0 6px 16px -4px rgba(14, 140, 123, 0.45)',
+        'glow-green': '0 6px 16px -4px rgba(21, 128, 61, 0.42)',
         'glow-amber': '0 6px 16px -4px rgba(217, 119, 6, 0.40)',
         'glow-copper': '0 6px 16px -4px rgba(193, 105, 79, 0.40)',
         'glow-slate': '0 6px 16px -4px rgba(90, 107, 128, 0.35)',

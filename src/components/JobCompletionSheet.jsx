@@ -103,7 +103,7 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
               {money(finalAmount)}
             </p>
           </div>
-          <Button type="submit" form="complete-job" size="lg" variant="accent" loading={submitting}>
+          <Button type="submit" form="complete-job" size="lg" variant="success" loading={submitting}>
             Mark job done
           </Button>
         </div>

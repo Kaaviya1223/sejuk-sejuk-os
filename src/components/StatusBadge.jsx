@@ -17,7 +17,7 @@ const TEXT_STYLES = {
   'In Progress': 'bg-coolant-50 text-coolant-700',
   'Job Done': 'bg-amber-50 text-amber-800',
   Reviewed: 'bg-pink-50 text-pink-700',
-  Closed: 'bg-emerald-50 text-emerald-700',
+  Closed: 'bg-success-50 text-success-700',
 }
 
 function StatusBadge({ status, size = 'md', onDark = false }) {

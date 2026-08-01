@@ -117,7 +117,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
             {transitions.map((t) => (
               <Button
                 key={t.to + t.label}
-                variant={t.to === 'Closed' || t.to === 'Reviewed' ? 'accent' : 'outline'}
+                variant={t.to === 'Closed' || t.to === 'Reviewed' ? 'success' : 'outline'}
                 loading={busy === t.to}
                 onClick={() => runTransition(t)}
               >

@@ -105,7 +105,7 @@ function Overview({ onNavigate, today }) {
           label="Closed"
           value={by('Closed')}
           icon={CheckCircle2}
-          tone="emerald"
+          tone="success"
         />
         <Stat
           loading={loading}

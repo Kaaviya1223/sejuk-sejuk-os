@@ -183,6 +183,15 @@ technician role renders an entirely different chrome. The brief says admin
 staff are on desktops and technicians are on phones, so they get genuinely
 different navigation rather than one layout squeezed down.
 
+**Blue leads, teal supports, green is spent only on "finished".** An earlier
+pass used green as the brand accent, which put it on the sidebar, the icon
+chips and the card rules — and also on the Complete job button and the Closed
+badge. When everything is green, green stops meaning done. So the chrome is now
+deep blue with an aircon-cold teal (the company is called *Sejuk* — cool — and
+sells cooling), and `success` is a reserved token that appears on exactly three
+things: the button that finishes a job, the manager's review/close actions, and
+the Closed state. Nothing decorative may wear it.
+
 **One status colour, everywhere.** `src/lib/palette.js` is the single source of
 the six status hues, read by both the badges and the dashboard figures, so a
 status never means one colour in the table and another in a chart. The six were

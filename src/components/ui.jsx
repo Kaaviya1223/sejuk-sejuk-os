@@ -92,6 +92,8 @@ export function CardHeader({ title, subtitle, actions, divided = true }) {
 const BUTTON_VARIANTS = {
   primary: 'bg-marine text-white hover:bg-marine-600 disabled:bg-marine/40',
   accent: 'bg-coolant text-white hover:bg-coolant-600 disabled:bg-coolant/40',
+  // Green appears on exactly one kind of button: the one that finishes a job.
+  success: 'bg-success text-white hover:bg-success-600 disabled:bg-success/40',
   outline: 'border border-slate-line bg-white text-marine hover:bg-frost disabled:text-slate-light',
   ghost: 'text-slate hover:bg-frost-deep hover:text-marine',
   danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300',
@@ -314,13 +316,14 @@ export function Sheet({ open, onClose, title, subtitle, children, footer, wide =
  */
 const TONES = {
   brand: { chip: 'from-marine-500 to-marine-600', glow: 'shadow-glow-blue', rail: 'bg-marine-500' },
-  accent: { chip: 'from-coolant to-coolant-600', glow: 'shadow-glow-green', rail: 'bg-coolant' },
+  accent: { chip: 'from-coolant to-coolant-600', glow: 'shadow-glow-teal', rail: 'bg-coolant' },
   amber: { chip: 'from-amber-400 to-amber-600', glow: 'shadow-glow-amber', rail: 'bg-amber-500' },
   copper: { chip: 'from-[#D98B6E] to-copper', glow: 'shadow-glow-copper', rail: 'bg-copper' },
-  emerald: {
-    chip: 'from-emerald-400 to-emerald-600',
+  // Green is the finished tone — kept for counts of completed work only.
+  success: {
+    chip: 'from-success to-success-600',
     glow: 'shadow-glow-green',
-    rail: 'bg-emerald-500',
+    rail: 'bg-success',
   },
   slate: { chip: 'from-slate-light to-slate', glow: 'shadow-glow-slate', rail: 'bg-slate' },
 }
