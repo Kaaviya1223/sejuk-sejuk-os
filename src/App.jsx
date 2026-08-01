@@ -96,7 +96,10 @@ function Shell() {
   if (isTechnician) {
     return (
       <div className="min-h-screen bg-frost">
-        <header className="sticky top-0 z-30 overflow-hidden bg-brand-sweep px-4 py-3 shadow-lift">
+        {/* No `overflow-hidden` here: the role menu opens downward out of this
+            header, and clipping it hides the menu entirely. The decorative
+            layers below are inset-0, so they never overflow anyway. */}
+        <header className="sticky top-0 z-30 bg-brand-sweep px-4 py-3 shadow-lift">
           <span aria-hidden className="pointer-events-none absolute inset-0 bg-brand-glow" />
           <span
             aria-hidden
