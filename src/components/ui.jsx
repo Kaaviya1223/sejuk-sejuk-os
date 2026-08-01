@@ -98,7 +98,7 @@ export function Button({
     <button
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition disabled:cursor-not-allowed ${
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100 ${
         BUTTON_VARIANTS[variant]
       } ${sizes[size]} ${className}`}
     >
@@ -156,10 +156,38 @@ export function Spinner({ label = 'Loading…' }) {
   )
 }
 
+/** A grey block standing in for content that is on its way. */
+export function Skeleton({ className = '' }) {
+  return <span className={`skeleton block ${className}`} />
+}
+
+/**
+ * Rows of skeletons shaped like the list they replace, so the page doesn't
+ * jump when the data lands.
+ */
+export function SkeletonRows({ rows = 5 }) {
+  return (
+    <div className="divide-y divide-slate-line">
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="flex items-center gap-4 px-5 py-4">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-3 w-28 rounded" />
+            <Skeleton className="h-2.5 w-44 rounded" />
+          </div>
+          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className="hidden h-2.5 w-24 rounded sm:block" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function EmptyState({ icon: Icon = Info, title, children }) {
   return (
-    <div className="px-5 py-10 text-center">
-      <Icon size={22} className="mx-auto mb-2 text-slate-light" />
+    <div className="px-5 py-12 text-center">
+      <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-frost-deep text-slate">
+        <Icon size={20} />
+      </span>
       <p className="text-sm font-medium text-marine">{title}</p>
       {children && <p className="mx-auto mt-1 max-w-sm text-sm text-slate">{children}</p>}
     </div>
@@ -214,9 +242,9 @@ export function Sheet({ open, onClose, title, subtitle, children, footer, wide =
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-marine/40 backdrop-blur-[2px] sm:items-center sm:p-6">
+    <div className="animate-fade fixed inset-0 z-50 flex items-end justify-center bg-marine/40 backdrop-blur-[2px] sm:items-center sm:p-6">
       <div
-        className={`flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-sheet sm:rounded-2xl ${
+        className={`animate-rise flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-sheet sm:rounded-2xl ${
           wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'
         }`}
       >
@@ -251,7 +279,14 @@ export function Sheet({ open, onClose, title, subtitle, children, footer, wide =
  * carries the category and the value stays in proportional figures so it
  * doesn't read loose at display size.
  */
-export function Stat({ label, value, sub, icon: Icon, tint = 'text-coolant bg-coolant-50' }) {
+export function Stat({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  loading = false,
+  tint = 'text-coolant bg-coolant-50',
+}) {
   return (
     <div className="rounded-xl border border-slate-line bg-white p-4 shadow-tile transition hover:shadow-lift">
       {Icon && (
@@ -259,15 +294,21 @@ export function Stat({ label, value, sub, icon: Icon, tint = 'text-coolant bg-co
           <Icon size={18} strokeWidth={2} />
         </div>
       )}
-      <p
-        className={`whitespace-nowrap font-semibold leading-none text-marine ${
-          String(value).length > 5 ? 'text-xl' : 'text-[28px]'
-        }`}
-      >
-        {value}
-      </p>
+
+      {loading ? (
+        <Skeleton className="h-7 w-14 rounded" />
+      ) : (
+        <p
+          className={`whitespace-nowrap font-semibold leading-none text-marine ${
+            String(value).length > 5 ? 'text-xl' : 'text-[28px]'
+          }`}
+        >
+          {value}
+        </p>
+      )}
+
       <p className="mt-1.5 text-xs font-medium text-slate">{label}</p>
-      {sub && <p className="mt-1 text-[11px] text-slate-light">{sub}</p>}
+      {sub && !loading && <p className="mt-1 text-[11px] text-slate-light">{sub}</p>}
     </div>
   )
 }

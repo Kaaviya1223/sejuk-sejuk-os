@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { Camera, FileText, Receipt, Trash2, X } from 'lucide-react'
+import { Camera, ClipboardCheck, FileText, Receipt, Trash2, Wallet, X } from 'lucide-react'
 
 import { Alert, Button, Field, Input, Select, Sheet, Textarea } from './ui.jsx'
 import { useSession } from '../context/session.js'
@@ -94,7 +94,7 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
       open={open}
       onClose={onClose}
       title="Complete job"
-      subtitle={`${order.order_no} · ${order.customer_name}`}
+      subtitle="Everything the office needs to close this out"
       footer={
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
@@ -109,57 +109,69 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
         </div>
       }
     >
-      <form id="complete-job" onSubmit={submit} className="space-y-4">
+      <form id="complete-job" onSubmit={submit} className="space-y-5">
         {error && <Alert tone="error" onDismiss={() => setError(null)}>{error}</Alert>}
 
         {/* Read-only context so the technician can confirm they're on the right job. */}
-        <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-line bg-frost/70 p-3 text-sm">
-          <ReadOnly label="Order ID" value={order.order_no} numeric />
-          <ReadOnly label="Technician" value={actor.name} />
-          <ReadOnly label="Service" value={order.service_type} />
-          <ReadOnly label="Quoted" value={money(order.quoted_price)} numeric />
-          <div className="col-span-2">
-            <ReadOnly label="Completed at" value="Stamped automatically on submit" />
+        <div className="overflow-hidden rounded-xl border border-slate-line">
+          <div className="flex items-center justify-between gap-3 bg-brand-sweep px-3.5 py-2.5">
+            <span className="tabular-nums text-sm font-semibold text-white">{order.order_no}</span>
+            <span className="truncate text-xs text-white/80">{order.customer_name}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 bg-frost/70 p-3.5 text-sm">
+            <ReadOnly label="Technician" value={actor.name} />
+            <ReadOnly label="Service" value={order.service_type} />
+            <ReadOnly label="Quoted" value={money(order.quoted_price)} numeric />
+            <ReadOnly label="Completed at" value="Stamped on submit" />
           </div>
         </div>
 
-        <Field label="Work done" required hint="What you actually did">
-          <Textarea
-            value={form.work_done}
-            onChange={set('work_done')}
-            rows={3}
-            required
-            placeholder="e.g. Chemical wash on 2 units, replaced drainage pipe, tested cooling"
-          />
-        </Field>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Extra charges" hint="RM">
-            <Input
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min="0"
-              value={form.extra_charges}
-              onChange={set('extra_charges')}
-              className="tabular-nums"
-              placeholder="0.00"
+        <Step icon={ClipboardCheck} title="The work" hint="Required">
+          <Field label="Work done" required hint="What you actually did">
+            <Textarea
+              value={form.work_done}
+              onChange={set('work_done')}
+              rows={3}
+              required
+              placeholder="e.g. Chemical wash on 2 units, replaced drainage pipe, tested cooling"
             />
           </Field>
-          <Field label="Final amount" hint="Auto">
-            <Input value={money(finalAmount)} readOnly disabled className="tabular-nums" />
+
+          <Field label="Remarks" hint="Optional">
+            <Textarea
+              value={form.remarks}
+              onChange={set('remarks')}
+              rows={2}
+              placeholder="Anything the office should know"
+            />
           </Field>
-        </div>
+        </Step>
 
-        {/* Evidence upload */}
-        <div>
-          <div className="mb-1.5 flex items-baseline justify-between">
-            <span className="text-sm font-medium text-marine">Photos / video / PDF</span>
-            <span className="text-xs text-slate-light">
-              {files.length}/{MAX_JOB_FILES}
-            </span>
+        <Step icon={Wallet} title="The money">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Extra charges" hint="RM">
+              <Input
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={form.extra_charges}
+                onChange={set('extra_charges')}
+                className="tabular-nums"
+                placeholder="0.00"
+              />
+            </Field>
+            <Field label="Final amount" hint="Auto">
+              <Input value={money(finalAmount)} readOnly disabled className="tabular-nums" />
+            </Field>
           </div>
+        </Step>
 
+        <Step
+          icon={Camera}
+          title="Evidence"
+          hint={`${files.length}/${MAX_JOB_FILES}`}
+        >
           <FilePicker
             files={files}
             onRemove={(i) => setFiles(files.filter((_, idx) => idx !== i))}
@@ -177,16 +189,7 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
             className="hidden"
             onChange={(e) => addFiles(e, 'evidence')}
           />
-        </div>
-
-        <Field label="Remarks" hint="Optional">
-          <Textarea
-            value={form.remarks}
-            onChange={set('remarks')}
-            rows={2}
-            placeholder="Anything the office should know"
-          />
-        </Field>
+        </Step>
 
         {/* Payment capture — collapsed by default so the common path stays short. */}
         {!showPayment ? (
@@ -266,6 +269,26 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
         )}
       </form>
     </Sheet>
+  )
+}
+
+/**
+ * A titled group of fields. The form is long enough that a technician needs to
+ * know where they are in it — work, money, evidence — rather than meeting one
+ * undifferentiated column of inputs.
+ */
+function Step({ icon: Icon, title, hint, children }) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center gap-2 border-b border-slate-line pb-1.5">
+        <Icon size={14} className="shrink-0 text-coolant" />
+        <h3 className="flex-1 font-display text-xs font-semibold uppercase tracking-wide text-marine-600">
+          {title}
+        </h3>
+        {hint && <span className="text-[11px] tabular-nums text-slate-light">{hint}</span>}
+      </div>
+      {children}
+    </section>
   )
 }
 

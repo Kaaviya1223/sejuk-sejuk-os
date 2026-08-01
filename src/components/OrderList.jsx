@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react'
 import StatusBadge from './StatusBadge.jsx'
 import StatusTrack from './StatusTrack.jsx'
-import { EmptyState, Spinner } from './ui.jsx'
+import { EmptyState, SkeletonRows } from './ui.jsx'
 import { money, relativeTime } from '../lib/format.js'
 
 /**
@@ -12,7 +12,7 @@ import { money, relativeTime } from '../lib/format.js'
  * job from their phone needs the same information.
  */
 function OrderList({ orders, loading, onSelect, emptyTitle = 'No orders', emptyBody }) {
-  if (loading) return <Spinner label="Loading orders…" />
+  if (loading) return <SkeletonRows rows={5} />
   if (!orders.length) return <EmptyState title={emptyTitle}>{emptyBody}</EmptyState>
 
   return (

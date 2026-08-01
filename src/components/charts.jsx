@@ -18,7 +18,7 @@ import { STATUSES } from '../lib/constants.js'
  * gap in the surface colour rather than a stroke, and the legend below doubles
  * as the value table.
  */
-export function StatusMix({ orders }) {
+export function StatusMix({ orders, loading = false }) {
   const [hovered, setHovered] = useState(null)
 
   const counts = STATUSES.map((status) => ({
@@ -28,6 +28,22 @@ export function StatusMix({ orders }) {
   const total = counts.reduce((sum, c) => sum + c.count, 0)
   const present = counts.filter((c) => c.count > 0)
 
+  if (loading) {
+    return (
+      <div>
+        <span className="skeleton block h-3.5 w-full rounded" />
+        <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+          {STATUSES.map((s) => (
+            <li key={s}>
+              <span className="skeleton block h-2.5 w-24 rounded" />
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  // Only after loading is "nothing here" the truth rather than "not yet".
   if (!total) return <ChartEmpty>No orders to chart yet.</ChartEmpty>
 
   const pct = (n) => Math.round((n / total) * 100)
@@ -90,7 +106,21 @@ export function StatusMix({ orders }) {
  * One hue, more-is-longer. Open jobs per technician, sorted heaviest first,
  * with the value at the tip of each bar.
  */
-export function TechnicianLoad({ orders, technicians }) {
+export function TechnicianLoad({ orders, technicians, loading = false }) {
+  if (loading) {
+    return (
+      <ul className="space-y-3">
+        {technicians.map((t) => (
+          <li key={t.name} className="grid grid-cols-[4.5rem_1fr_2rem] items-center gap-3">
+            <span className="skeleton block h-2.5 w-12 rounded" />
+            <span className="skeleton block h-3.5 rounded" />
+            <span className="skeleton block h-2.5 w-4 justify-self-end rounded" />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
   const rows = technicians
     .map((tech) => ({
       name: tech.name,
@@ -134,10 +164,19 @@ export function TechnicianLoad({ orders, technicians }) {
  * ramp, so the state reads across the whole ring rather than only where it
  * stops.
  */
-export function CompletionMeter({ done, total, caption }) {
+export function CompletionMeter({ done, total, caption, loading = false }) {
   const ratio = total ? done / total : 0
   const r = 74
   const circumference = 2 * Math.PI * r
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center">
+        <span className="skeleton block h-40 w-40 rounded-full" />
+        <span className="skeleton mt-3 block h-2.5 w-32 rounded" />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col items-center">

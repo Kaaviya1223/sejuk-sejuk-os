@@ -66,37 +66,49 @@ function Overview({ onNavigate, today }) {
 
       <div className="-mt-14 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
         <Stat
+          loading={loading}
           label="Total orders"
           value={orders.length}
           icon={ClipboardList}
           tint="text-marine-600 bg-marine-100"
         />
-        <Stat label="New" value={by('New')} icon={Inbox} tint="text-slate bg-frost-deep" />
         <Stat
+          loading={loading}
+          label="New"
+          value={by('New')}
+          icon={Inbox}
+          tint="text-slate bg-frost-deep"
+        />
+        <Stat
+          loading={loading}
           label="Assigned"
           value={by('Assigned')}
           icon={UserCheck}
           tint="text-copper bg-copper/10"
         />
         <Stat
+          loading={loading}
           label="In Progress"
           value={by('In Progress')}
           icon={PlayCircle}
           tint="text-amber-600 bg-amber-50"
         />
         <Stat
+          loading={loading}
           label="Awaiting review"
           value={by('Job Done')}
           icon={Clock}
           tint="text-coolant bg-coolant-50"
         />
         <Stat
+          loading={loading}
           label="Closed"
           value={by('Closed')}
           icon={CheckCircle2}
           tint="text-emerald-600 bg-emerald-50"
         />
         <Stat
+          loading={loading}
           label="Techs on jobs"
           value={busyTechs}
           sub={`of ${technicians.length}`}
@@ -104,6 +116,7 @@ function Overview({ onNavigate, today }) {
           tint="text-marine-600 bg-marine-100"
         />
         <Stat
+          loading={loading}
           label="Completed value"
           value={shortMoney(completedValue)}
           sub={`${completed.length} jobs`}
@@ -125,7 +138,7 @@ function Overview({ onNavigate, today }) {
             subtitle="Every order by workflow status"
           />
           <div className="px-5 py-5">
-            <StatusMix orders={orders} />
+            <StatusMix orders={orders} loading={loading} />
           </div>
         </Card>
 
@@ -136,6 +149,7 @@ function Overview({ onNavigate, today }) {
               done={completed.length}
               total={orders.length}
               caption="orders completed"
+              loading={loading}
             />
           </div>
         </Card>
@@ -143,7 +157,7 @@ function Overview({ onNavigate, today }) {
         <Card padded={false}>
           <CardHeader title="Open jobs per technician" subtitle="Excludes reviewed and closed" />
           <div className="px-5 py-5">
-            <TechnicianLoad orders={orders} technicians={technicians} />
+            <TechnicianLoad orders={orders} technicians={technicians} loading={loading} />
           </div>
         </Card>
 

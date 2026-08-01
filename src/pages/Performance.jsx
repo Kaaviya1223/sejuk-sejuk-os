@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, RotateCcw, Trophy, Wallet } from 'lucide-react'
 
-import { Alert, Card, CardHeader, PageHeader, Spinner, Stat } from '../components/ui.jsx'
+import { Alert, Card, CardHeader, PageHeader, SkeletonRows, Stat } from '../components/ui.jsx'
 import { useSession } from '../context/session.js'
 import { money, shortMoney } from '../lib/format.js'
 import { listOrders } from '../lib/orders.js'
@@ -141,6 +141,7 @@ function Performance() {
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat
+          loading={loading}
           label="Jobs completed"
           value={board.jobs}
           sub={label}
@@ -148,6 +149,7 @@ function Performance() {
           tint="text-coolant bg-coolant-50"
         />
         <Stat
+          loading={loading}
           label="Value completed"
           value={shortMoney(board.value)}
           sub={label}
@@ -155,6 +157,7 @@ function Performance() {
           tint="text-marine-600 bg-marine-100"
         />
         <Stat
+          loading={loading}
           label="Postponements"
           value={board.postponed}
           sub="reschedules in period"
@@ -162,6 +165,7 @@ function Performance() {
           tint="text-amber-600 bg-amber-50"
         />
         <Stat
+          loading={loading}
           label="Top technician"
           value={board.rows[0]?.jobs ? board.rows[0].name : '—'}
           sub={board.rows[0]?.jobs ? `${board.rows[0].jobs} jobs` : 'nothing completed yet'}
@@ -177,7 +181,7 @@ function Performance() {
         />
 
         {loading ? (
-          <Spinner label="Loading performance…" />
+          <SkeletonRows rows={4} />
         ) : (
           <>
             {/* Desktop table */}
