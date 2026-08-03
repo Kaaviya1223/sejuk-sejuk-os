@@ -82,7 +82,10 @@ function SupervisorCard({ onOpenOrder }) {
                 Every completed job passed the checks.
               </EmptyState>
             ) : (
-              <ul className="space-y-2">
+              /* Bounded so a bad week cannot stretch the dashboard — the list
+                 scrolls inside the card and the count below says what is
+                 out of view. */
+              <ul className="max-h-[26rem] space-y-2 overflow-y-auto pr-0.5">
                 {data.flagged.slice(0, 6).map((f) => (
                   <li key={f.order_no}>
                     <button

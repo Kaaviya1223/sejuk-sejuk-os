@@ -132,61 +132,68 @@ function Overview({ onNavigate, today }) {
         </div>
       )}
 
-      <div className="mt-6 grid items-start gap-4 lg:grid-cols-3">
-        <Card padded={false} className="lg:col-span-2">
-          <CardHeader
-            title="Where the work sits"
-            subtitle="Every order by workflow status"
-          />
-          <div className="px-5 py-5">
-            <StatusMix orders={orders} loading={loading} />
-          </div>
-        </Card>
+      {/* Two independent columns rather than a grid of cells: a grid row is as
+          tall as its tallest card, which left holes under the short ones. Wide
+          figures and the order list go left, the glanceable ones stack right,
+          and each column ends where its content ends. */}
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          <Card padded={false}>
+            <CardHeader title="Where the work sits" subtitle="Every order by workflow status" />
+            <div className="px-5 py-5">
+              <StatusMix orders={orders} loading={loading} />
+            </div>
+          </Card>
 
-        <Card padded={false}>
-          <CardHeader title="Completion rate" subtitle="Job Done and beyond" />
-          <div className="px-5 py-5">
-            <CompletionMeter
-              done={completed.length}
-              total={orders.length}
-              caption="orders completed"
-              loading={loading}
+          <Card padded={false}>
+            <CardHeader title="Open jobs per technician" subtitle="Excludes reviewed and closed" />
+            <div className="px-5 py-5">
+              <TechnicianLoad orders={orders} technicians={technicians} loading={loading} />
+            </div>
+          </Card>
+
+          <Card padded={false}>
+            <CardHeader
+              title="Recent orders"
+              subtitle="Newest first — select one to see its full record"
+              actions={
+                <button
+                  onClick={() => onNavigate?.('orders')}
+                  className="rounded-lg border border-slate-line px-2.5 py-1 text-xs font-medium text-brand transition hover:bg-frost"
+                >
+                  View all
+                </button>
+              }
             />
-          </div>
-        </Card>
+            <OrderList
+              orders={orders.slice(0, 6)}
+              loading={loading}
+              onSelect={setSelected}
+              emptyTitle="No orders yet"
+              emptyBody="Create the first one from the Orders page."
+            />
+          </Card>
+        </div>
 
-        <Card padded={false}>
-          <CardHeader title="Open jobs per technician" subtitle="Excludes reviewed and closed" />
-          <div className="px-5 py-5">
-            <TechnicianLoad orders={orders} technicians={technicians} loading={loading} />
-          </div>
-        </Card>
+        <div className="space-y-4">
+          <Card padded={false}>
+            <CardHeader title="Completion rate" subtitle="Job Done and beyond" />
+            <div className="px-5 py-5">
+              <CompletionMeter
+                done={completed.length}
+                total={orders.length}
+                caption="orders completed"
+                loading={loading}
+              />
+            </div>
+          </Card>
 
-        <SupervisorCard
-          onOpenOrder={(orderNo) => setSelected(orders.find((o) => o.order_no === orderNo) ?? null)}
-        />
-
-        <Card padded={false} className="lg:col-span-2">
-          <CardHeader
-            title="Recent orders"
-            subtitle="Newest first — select one to see its full record"
-            actions={
-              <button
-                onClick={() => onNavigate?.('orders')}
-                className="rounded-lg border border-slate-line px-2.5 py-1 text-xs font-medium text-brand transition hover:bg-frost"
-              >
-                View all
-              </button>
+          <SupervisorCard
+            onOpenOrder={(orderNo) =>
+              setSelected(orders.find((o) => o.order_no === orderNo) ?? null)
             }
           />
-          <OrderList
-            orders={orders.slice(0, 6)}
-            loading={loading}
-            onSelect={setSelected}
-            emptyTitle="No orders yet"
-            emptyBody="Create the first one from the Orders page."
-          />
-        </Card>
+        </div>
       </div>
 
       <OrderDetailSheet
