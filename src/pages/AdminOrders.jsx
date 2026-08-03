@@ -146,8 +146,8 @@ function AdminOrders() {
               </p>
               <p>
                 {receipt.order.assigned_technician
-                  ? `Assigned to ${receipt.order.assigned_technician} — status ${receipt.order.status}.`
-                  : 'No technician assigned yet — the order sits in New until you assign one.'}
+                  ? `Assigned to ${receipt.order.assigned_technician}. Status is now ${receipt.order.status}.`
+                  : 'No technician assigned yet, so the order sits in New until you assign one.'}
               </p>
             </div>
           </Alert>
@@ -336,7 +336,7 @@ function AdminOrders() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Assigned technician" hint="Optional — leave blank to triage later">
+            <Field label="Assigned technician" hint="Optional. Leave blank to triage later.">
               <Select value={form.assigned_technician} onChange={set('assigned_technician')}>
                 <option value="">Unassigned</option>
                 {technicians.map((t) => (
@@ -358,7 +358,7 @@ function AdminOrders() {
             <Input type="datetime-local" value={form.scheduled_for} onChange={set('scheduled_for')} />
           </Field>
 
-          <Field label="Admin notes" hint="Internal only — included in the technician's brief">
+          <Field label="Admin notes" hint="Internal only, but included in the technician's brief.">
             <Textarea value={form.admin_notes} onChange={set('admin_notes')} rows={2} />
           </Field>
         </form>

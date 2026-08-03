@@ -187,7 +187,7 @@ const INTENTS = {
     fallback: (f) =>
       !f.leader || f.leader.jobs === 0
         ? `No jobs were completed ${f.period}, so there is no leader.`
-        : `${f.leader.technician} completed the most jobs ${f.period} — ${
+        : `${f.leader.technician} completed the most jobs ${f.period}: ${
             f.leader.jobs
           }, worth RM ${f.leader.total.toFixed(2)}.`,
   },
@@ -236,7 +236,7 @@ const INTENTS = {
         ? `${f.overloaded
             .map((t) => `${t.technician} completed ${t.jobs} jobs`)
             .join('; ')} ${f.period}, against a team average of ${f.team_average_jobs}.`
-        : `Workload looks even ${f.period} — the team average is ${f.team_average_jobs} jobs each.`,
+        : `Workload looks even ${f.period}. The team average is ${f.team_average_jobs} jobs each.`,
   },
 }
 
@@ -253,7 +253,7 @@ Return JSON only: {"intent": "...", "technician": "..." | null, "range": "..."}
 
 intent must be one of: ${Object.keys(INTENTS).join(', ')}, unsupported
 range must be one of: ${Object.keys(RANGES).join(', ')}   (default this_week when the question gives no period)
-technician must be exactly one of: ${names.join(', ')} — or null if the question names no one on that list.
+technician must be exactly one of: ${names.join(', ')}, or null if the question names no one on that list.
 
 Use "unsupported" for anything that is not about counting or listing completed jobs,
 or that names a person who is not on the list.
@@ -279,7 +279,7 @@ const SMALL_TALK = [
   {
     test: /^\s*(hi|hai|hey|hello|helo|yo|good (morning|afternoon|evening))\b/i,
     reply:
-      'Hi. I can tell you about completed work — how many jobs, who finished them, and how the workload is spread. Try "How many jobs were completed today?"',
+      'Hi. I can tell you about completed work: how many jobs, who finished them, and how the workload is spread. Try "How many jobs were completed today?"',
   },
   {
     test: /\b(thanks|thank you|thx|terima kasih)\b/i,
@@ -314,9 +314,10 @@ service company in Malaysia. The user has said something conversational rather t
 about work.
 
 Reply in one or two short, warm sentences, the way a helpful colleague would.
+Write plainly. Do not use em dashes.
 
 You have no data in front of you. Never state a number, a name, an order, a date or any fact
-about this company's jobs, staff, customers or money — you do not know them. If the user seems
+about this company's jobs, staff, customers or money, because you do not know them. If the user seems
 to want operational facts, say you can tell them about completed jobs: how many, by whom, and
 how the workload is spread across the team.
 
@@ -363,14 +364,38 @@ function classifyLocally(question, names) {
   return { intent, technician, range }
 }
 
+/**
+ * Anything shaped like an identifier — ORDER1014, ORD-88902, INV 220 — that is
+ * not in the facts the model was given.
+ *
+ * The prompt already forbids inventing one, and it did it anyway: asked for a
+ * count, where the facts carry no order numbers at all, it appended
+ * "ORD-88902". A fabricated order number is worse than a clumsy sentence,
+ * because a manager can go looking for it. So the claim is checked rather than
+ * trusted, and a failing sentence is thrown away for the computed one.
+ */
+function inventedIdentifiers(answer, facts) {
+  const known = JSON.stringify(facts).toUpperCase()
+  const found = answer.toUpperCase().match(/\b[A-Z]{2,}[-\s]?\d{3,}\b/g) ?? []
+  return found.filter((token) => {
+    // "RM 660" is a price, not an identifier, and the amount is in the facts.
+    if (/^RM[-\s]?\d/.test(token)) return false
+    return !known.includes(token.replace(/[-\s]/g, ''))
+  })
+}
+
 /** Step 4 — phrase the computed facts. The model sees nothing else. */
 async function phrase(question, facts) {
   const prompt = `You are an operations assistant for an air-conditioner service company.
 Answer the manager's question using ONLY the JSON facts below.
 Never invent a number, a name or an order number that is not in the JSON.
-Refer to people by name only. Never use he/she/his/her — the roster carries names, not genders.
+Only mention an order number if it appears in the JSON. If there are none, simply do not
+mention any; never remark on their absence.
+Refer to people by name only. Never use he/she/his/her, since the roster carries names, not genders.
 Amounts are Malaysian ringgit; write them as "RM 210.00".
 Be direct: two sentences at most, then list order numbers on their own lines if the JSON has them.
+Write plainly. Do not use em dashes.
+Match singular and plural: one job, two jobs. Do not repeat a person's name in the same sentence.
 
 Question: "${question}"
 Facts: ${JSON.stringify(facts)}`
@@ -407,7 +432,7 @@ export default async function handler(req, res) {
       } catch {
         answer =
           smallTalk(question) ??
-          'I can tell you about completed jobs — how many, by whom, and how the workload is spread. Try "How many jobs were completed today?"'
+          'I can tell you about completed jobs: how many, by whom, and how the workload is spread. Try "How many jobs were completed today?"'
         phrasedBy = 'computed'
       }
       return res.status(200).json({ intent: 'small_talk', answer, phrasedBy, routedBy: 'chat' })
@@ -429,7 +454,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         intent: 'unsupported',
         answer:
-          'I can only answer questions about completed jobs — how many, by whom, and how the workload is spread. Try "How many jobs did Ali complete last week?"',
+          'I can only answer questions about completed jobs: how many, by whom, and how the workload is spread. Try "How many jobs did Ali complete last week?"',
         capabilities: CAPABILITIES,
         routedBy,
       })
@@ -458,6 +483,8 @@ export default async function handler(req, res) {
     let phrasedBy = 'model'
     try {
       answer = await phrase(question, facts)
+      const invented = inventedIdentifiers(answer, facts)
+      if (invented.length) throw new Error(`invented ${invented.join(', ')}`)
     } catch {
       answer = intent.fallback(facts)
       phrasedBy = 'computed'

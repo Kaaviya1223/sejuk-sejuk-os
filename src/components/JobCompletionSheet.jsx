@@ -53,7 +53,7 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
       return
     }
     setter([...current, ...picked.slice(0, room)])
-    if (picked.length > room) setError(`Only the first ${room} file(s) were added — limit is ${MAX_JOB_FILES}.`)
+    if (picked.length > room) setError(`Only the first ${room} file(s) were added. The limit is ${MAX_JOB_FILES}.`)
     event.target.value = ''
   }
 

@@ -37,7 +37,7 @@ export const RULES = {
       if (over < 50 || final < quoted * 1.3) return null
       return `Final RM ${final.toFixed(2)} against a quote of RM ${quoted.toFixed(
         2,
-      )} — ${Math.round((over / quoted) * 100)}% over.`
+      )}, which is ${Math.round((over / quoted) * 100)}% over.`
     },
   },
 
@@ -92,7 +92,8 @@ async function digest(flagged, total) {
 Below is a list of completed jobs that automated checks flagged, with the reason for each.
 Write ONE sentence for a manager: what needs attention first and why.
 Use only what is in the JSON. Never invent an order, a name or a number.
-Refer to people by name only — never use he/she/his/her.
+Refer to people by name only; never use he/she/his/her.
+Write plainly. Do not use em dashes.
 
 Flagged (${flagged.length} of ${total} completed jobs checked): ${JSON.stringify(flagged)}`
 
@@ -104,7 +105,7 @@ function templateDigest(flagged, total) {
   if (!flagged.length) return `Nothing flagged across ${total} completed jobs.`
   const high = flagged.filter((f) => f.severity === 'high').length
   return high
-    ? `${flagged.length} of ${total} completed jobs need attention, ${high} of them serious — start with the ones over quote or missing evidence.`
+    ? `${flagged.length} of ${total} completed jobs need attention, ${high} of them serious. Start with the ones over quote or missing evidence.`
     : `${flagged.length} of ${total} completed jobs need attention.`
 }
 

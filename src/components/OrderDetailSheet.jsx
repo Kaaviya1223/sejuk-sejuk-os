@@ -240,7 +240,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                 <p className="mb-2 text-xs font-medium text-ink">
                   Reassign technician
                   <span className="ml-1.5 font-normal text-slate">
-                    (Admin only — sends a WhatsApp job brief)
+                    (Admin only. Sends a WhatsApp job brief.)
                   </span>
                 </p>
                 <Select

@@ -1,12 +1,12 @@
-# Sejuk Sejuk Ops — Service Operations System
+# Sejuk Sejuk Ops. Service Operations System
 
 An internal operations tool for an air-conditioner service company: an admin
 creates a service order, a technician completes the job in the field, and the
-record — evidence photos, final amount, payment, audit trail — comes back to
+record, including evidence photos, final amount, payment and audit trail, comes back to
 the office.
 
 **Scope of this submission: Modules 1, 2 and 3, the KPI dashboard, and the AI
-Operations Query Window** — including every WhatsApp bonus. Two of the three
+Operations Query Window**, including every WhatsApp bonus. Two of the three
 optional advanced AI challenges are covered as well: the workflow supervisor
 and operational insight. Document understanding is not. See
 [What is not built](#what-is-not-built).
@@ -44,34 +44,34 @@ The migration adds:
 **The app works before you run it.** Writes retry without any column the
 database doesn't have yet, and the UI shows a banner naming what's missing.
 You can create and complete orders immediately; the extra fields simply start
-persisting once the migration lands, with no code change. This is deliberate —
+persisting once the migration lands, with no code change. This is deliberate:
 a reviewer should not hit a wall on first load.
 
 ---
 
 ## What was built
 
-### Module 1 — Admin Portal (order submission)
+### Module 1: Admin Portal (order submission)
 
 - Create order with all required fields: **auto-generated order no**, customer
   name, phone, address, problem description, service type, quoted price,
-  assigned technician, admin notes — plus branch and a scheduled date.
+  assigned technician, admin notes, plus branch and a scheduled date.
 - **Order summary after submission** (bonus): a confirmation panel showing the
   new order number, customer, price and resulting status.
 - **WhatsApp notification to the technician** (bonus): assigning a technician
-  renders a full job brief — address, phone, issue, quote, office notes — as a
+  renders a full job brief, address, phone, issue, quote, office notes, as a
   `wa.me` deep link, previewed in full before sending.
 - Order list with search (order no / customer / phone / address) and filters by
   status and technician. Table on desktop, cards on mobile.
 - Order detail sheet: full record, uploaded files, WhatsApp history, audit
   trail, and reassignment.
 
-### Module 2 — Technician Portal (service job)
+### Module 2: Technician Portal (service job)
 
 Mobile-first, on its own chrome: no sidebar, thumb-sized targets, sticky action
 bar with safe-area padding.
 
-- Only jobs assigned to the signed-in technician are **fetched at all** — the
+- Only jobs assigned to the signed-in technician are **fetched at all**, the
   rule "only the assigned technician may complete a job" is enforced by not
   loading anyone else's work, not by hiding a button.
 - Job cards with tap-to-navigate address (Google Maps) and tap-to-call phone.
@@ -82,13 +82,13 @@ bar with safe-area padding.
     thumbnails and per-file removal before upload
   - **Final amount auto-calculated** (quoted + extras), always visible in the
     footer as you type
-- **Payment capture** (bonus): amount, method, receipt photo, notes — collapsed
+- **Payment capture** (bonus): amount, method, receipt photo, notes, collapsed
   by default so the common path stays short.
 - **Postpone / reschedule** with a reason, which increments a counter.
 - **WhatsApp feedback message to the customer** (bonus) plus a completion notice
   for the manager / accounts, both rendered on submission.
 
-### Module 3 — WhatsApp notification trigger
+### Module 3: WhatsApp notification trigger
 
 [`api/notify.js`](api/notify.js) is a serverless endpoint that fires the
 customer feedback request and the manager completion notice. It takes an order
@@ -99,7 +99,7 @@ status.
 
 The top bar carries the feed of everything generated, with a count of what has
 not gone out yet. "Unread" means *undispatched*: delivery is a human tapping a
-`wa.me` link, so the app stamps `sent_at` at the moment someone opens it — the
+`wa.me` link, so the app stamps `sent_at` at the moment someone opens it, the
 only point at which it can honestly claim a message was sent.
 
 It renders from the same template module the UI previews from, records each
@@ -109,15 +109,15 @@ overrides that for a deliberate resend. Job completion calls this endpoint and
 falls back to building the messages client-side if it is unreachable, so a
 technician never loses a write-up to a missing side effect.
 
-### Bonus — KPI dashboard
+### Bonus: KPI dashboard
 
 A **Performance** page for Admin and Manager: jobs completed, value collected,
 postponements, and a leaderboard ranked by jobs with value as the tie-break.
-The period selector covers this week, last week, this month and all time —
-weeks start Monday. Completed jobs are dated by completion, everything else by
+The period selector covers this week, last week, this month and all time.
+Weeks start Monday. Completed jobs are dated by completion, everything else by
 when it was raised.
 
-### Advanced AI — Workflow Supervisor
+### Advanced AI: Workflow Supervisor
 
 A **Needs attention** card on the dashboard, backed by
 [`api/supervise.js`](api/supervise.js). It re-reads completed jobs and applies
@@ -125,7 +125,7 @@ four rules, each stating its own threshold in code:
 
 | Rule | Fires when |
 | --- | --- |
-| Over quote | final is 30% above quoted **and** at least RM 50 over — a ratio alone flags a RM 20 job |
+| Over quote | final is 30% above quoted **and** at least RM 50 over, since a ratio alone flags a RM 20 job |
 | No evidence | completed with zero files in `job_files` |
 | Postponed repeatedly | `reschedule_count` ≥ 2 |
 | Waiting on review | `Job Done` for 3 days or more |
@@ -137,11 +137,11 @@ supervisor, so the thresholds live in `RULES` where they can be read and
 argued with. Missing `job_files` means "cannot tell" rather than "no evidence",
 so the rule sits out rather than flagging every job.
 
-### Manager — review queue
+### Manager: review queue
 
 Managers own the last three steps of the workflow, but until now they signed
 off from inside an order sheet reached through the same list an admin uses for
-intake — two roles, one screen, no sense that they do different jobs.
+intake: two roles, one screen, no sense that they do different jobs.
 
 **Review queue** is a manager-only page holding everything at `Job Done`, with
 the decision and the evidence for it on one screen: quoted against final with
@@ -155,13 +155,13 @@ coming in ("3 orders with no technician assigned"), a manager's with work
 waiting to be signed off ("6 completed jobs waiting for your review"), each
 with a way straight there.
 
-### AI Module — Operations Query Window
+### AI Module: Operations Query Window
 
 A manager-only side panel answering four kinds of operational question from
 live data. The model classifies the question and phrases the result; the query
 and every number in between are server-side code. Each answer shows the exact
 retrieval behind it. Full detail, including what it cannot do, is in
-[AI module](#ai-module--operations-query-window).
+[AI module](#ai-module-operations-query-window).
 
 ---
 
@@ -184,7 +184,7 @@ retrieval behind it. Full detail, including what it cannot do, is in
 
 **All data access lives in `src/lib/orders.js`.** Components never touch the
 Supabase client. Workflow rules, audit writes and notification rendering stay
-in one reviewable module instead of being scattered across pages — so "what
+in one reviewable module instead of being scattered across pages, so "what
 happens when a job is completed" is answerable by reading one function.
 
 **The workflow is a declared state machine, not scattered conditionals.**
@@ -199,7 +199,7 @@ Work also moves backwards, because real work does: an admin can unassign or
 postpone, and a manager reviewing a job can send it back to the technician
 (`Job Done → In Progress`) or reopen one already reviewed. Those paths are
 declared beside the forward ones, so a page cannot invent a move the rules do
-not allow — the review queue renders its buttons from `allowedTransitions`
+not allow: the review queue renders its buttons from `allowedTransitions`
 rather than hardcoding Approve and Reject.
 
 `allowedTransitions(order, role, technicianName)` is the only thing that
@@ -233,8 +233,8 @@ technician role renders an entirely different chrome. The brief says admin
 staff are on desktops and technicians are on phones, so they get genuinely
 different navigation rather than one layout squeezed down.
 
-**Light and dark are one set of class names.** The semantic tokens — surface,
-canvas, ink, muted, hairline, and the tint steps — are CSS variables consumed
+**Light and dark are one set of class names.** The semantic tokens (surface,
+canvas, ink, muted, hairline, and the tint steps) are CSS variables consumed
 through Tailwind (`rgb(var(--surface) / <alpha-value>)`), so `bg-surface` and
 `text-ink` resolve per theme and opacity modifiers still work. Around 320 usages
 across 16 files therefore flip without a single `dark:` variant; the handful of
@@ -243,15 +243,15 @@ explicit dark steps.
 
 The dark palette is **selected, not inverted**. Surfaces are cool navy so they
 sit under the same brand gradient, ink was picked against that surface, and the
-six status hues use their own dark steps — flipping a categorical palette by
+six status hues use their own dark steps, flipping a categorical palette by
 lightness is what makes dark-mode charts muddy. The theme follows the OS until
 someone chooses, after which their choice sticks.
 
 **Blue leads, teal supports, green is spent only on "finished".** An earlier
 pass used green as the brand accent, which put it on the sidebar, the icon
-chips and the card rules — and also on the Complete job button and the Closed
+chips and the card rules, and also on the Complete job button and the Closed
 badge. When everything is green, green stops meaning done. So the chrome is now
-deep blue with an aircon-cold teal (the company is called *Sejuk* — cool — and
+deep blue with an aircon-cold teal (the company is called *Sejuk*, cool, and
 sells cooling), and `success` is a reserved token that appears on exactly three
 things: the button that finishes a job, the manager's review/close actions, and
 the Closed state. Nothing decorative may wear it.
@@ -289,7 +289,7 @@ supabase/
 
 ## WhatsApp notifications
 
-Implemented as the Module 1 and Module 2 **bonuses** — a technician job brief
+Implemented as the Module 1 and Module 2 **bonuses**: a technician job brief
 on assignment, and a customer feedback request plus manager/accounts notice on
 completion. The completion pair is fired by the Module 3 server-side trigger,
 which checks the status condition itself; see
@@ -303,12 +303,12 @@ message is written to `notifications` so the history is auditable even though
 delivery is a manual tap.
 
 Numbers are normalised to the `wa.me` format (`012-345 6789` → `60123456789`).
-Orders without a phone number still produce a working link — WhatsApp opens and
+Orders without a phone number still produce a working link. WhatsApp opens and
 asks the sender to pick a contact.
 
 ---
 
-## AI module — Operations Query Window
+## AI module: Operations Query Window
 
 A manager-only side panel, opened with **Ask** in the top bar. It sits beside
 the work rather than on its own page: the questions it answers ("who is
@@ -336,11 +336,16 @@ wording of an answer but never the number in it.
 exact column list, the date window and a row cap; nothing selects `*`, so a
 customer's phone number cannot reach the model because someone asked about job
 counts. A technician name coming back from the classifier is only used after it
-matches a row in `technicians` — the model cannot invent a filter value.
+matches a row in `technicians`: the model cannot invent a filter value.
 
 **Every answer carries its own receipt.** The response body includes the
-retrieval descriptor — table, columns, filters, row count — and the rows it
-counted, so the claim is auditable rather than asserted. The panel itself shows
+retrieval descriptor (table, columns, filters, row count) and the rows it
+counted, so the claim is auditable rather than asserted. Any order-number-shaped
+token in a phrased answer is checked against those facts before the answer is
+shown: asked for a count, the model once appended an invented "ORD-88902", and a
+fabricated order number is worse than a clumsy sentence because a manager can go
+looking for it. A sentence that fails the check is thrown away for the computed
+one. The panel itself shows
 the intent it was read as, the period and the row count; the column list stays
 in the response rather than on screen, because it is developer language in a
 tool built for operations staff.
@@ -361,13 +366,13 @@ Conversation is answered by the model in its own words. "Nice to meet you"
 deserves a reply rather than a capability list, and no pattern list covers every
 pleasantry. Anything plainly not a data question goes to the model with **no
 data in the prompt** and an instruction never to state a number, name, order or
-date — it can be warm, it cannot make a claim about the company's work. Fixed
+date. It can be warm; it cannot make a claim about the company's work. Fixed
 replies for "hi", "thanks" and "what can you do?" stand in when the model is
 unavailable. A greeting wrapped around a real question ("hi, how many jobs
 today?") is treated as the question.
 
 Anything else is refused before a query runs, with a list of what the assistant
-does support — it does not guess. Off-topic questions ("what is the weather?"),
+does support. It does not guess. Off-topic questions ("what is the weather?"),
 a name that is not on the roster, and an instruction to ignore its instructions
 all return the same refusal, having touched no data.
 
@@ -381,7 +386,7 @@ as out of scope.
 
 - **Four intents, and that is the whole surface.** "Which branch is busiest?"
   or "show me unassigned orders" are not supported. Adding one is adding an
-  entry to `INTENTS` with its own declared query — deliberately not a
+  entry to `INTENTS` with its own declared query, deliberately not a
   free-form text-to-SQL layer, which is what would make an unbounded question
   set possible and an unbounded blast radius with it.
 - **Completed work only.** Every intent filters to `Job Done`, `Reviewed`,
@@ -389,10 +394,10 @@ as out of scope.
 - **No conversation memory.** Each question is answered on its own; "and what
   about last month?" will not resolve.
 - **Free-tier quota.** Google AI Studio meters per model, so `callGemini` walks
-  a short list — the configured model, then lighter ones — before giving up, and
+  a short list: the configured model, then lighter ones, before giving up, and
   one model's exhausted quota no longer costs the whole feature. When every one
   is out, the endpoint routes by keyword and phrases the answer from a template
-  instead — the numbers are identical because they were never the model's to
+  instead: the numbers are identical because they were never the model's to
   begin with. The response marks this (`routedBy`, `phrasedBy`) and the UI shows
   a badge, so a degraded answer is never passed off as a full one.
 - **200-row cap per query.** Beyond that the counts would under-report; at real
@@ -424,7 +429,7 @@ as out of scope.
   security but grants the anonymous role full access, because there are no real
   user identities to check against. Production would replace every
   `USING (true)` with a check on `auth.uid()` and the user's role. Until then
-  the publishable key can read and write all rows — fine for an assessment
+  the publishable key can read and write all rows, fine for an assessment
   build, not for real customer data.
 - **Workflow rules are enforced in the client**, apart from the status `CHECK`
   constraint. A crafted request could still make an illegal transition. Real
@@ -434,7 +439,7 @@ as out of scope.
 - **No optimistic-concurrency control.** Two people editing the same order
   last-write-wins.
 - **File uploads are not resumable** and there is no client-side image
-  compression, which matters on a weak mobile connection — a technician
+  compression, which matters on a weak mobile connection, because a technician
   uploading six full-resolution photos on 4G will wait.
 - **Order lists load up to 200 rows** with no pagination.
 - **No automated tests.** The data layer was verified manually against the live
@@ -449,7 +454,7 @@ as out of scope.
   `wa.me` deep link; a human still taps send. There are no WhatsApp Business
   API credentials for this build, and the brief accepts a deep link. Swapping in
   a provider means replacing one function in `api/notify.js`.
-- **AI document understanding** — the third advanced challenge. Extracting
+- **AI document understanding**: the third advanced challenge. Extracting
   fields from an uploaded invoice needs a vision call per document, and the
   evidence already arrives as structured fields typed by the technician, so it
   would be re-deriving what the form already collected. The other two advanced
@@ -465,7 +470,7 @@ as out of scope.
 interesting decisions were about what to derive rather than ask for, and
 putting creation in a sheet so the admin keeps the order list in view.
 
-**Hardest module.** Module 2 — not technically, but in judgement. A completion
+**Hardest module.** Module 2, though not for technical reasons. A completion
 form is easy to make thorough and miserable to use one-handed on a phone in
 someone's hallway. Deciding what to derive (order no, technician, timestamp,
 final amount), what to make optional (payment, collapsed by default), and what
@@ -477,16 +482,16 @@ the whole submission.
 
 1. Real auth with RLS policies keyed to `auth.uid()`, so the workflow rules are
    enforced by the database rather than trusted from the client.
-2. Move aggregation into Postgres views / RPCs before any dashboard is built —
+2. Move aggregation into Postgres views / RPCs before any dashboard is built;
    summing in the browser stops working at a few thousand orders.
 3. Client-side image compression and resumable uploads before this touches a
    real 4G connection.
 4. Signed URLs for evidence files instead of a public bucket.
-5. Automated tests around the state machine and the money arithmetic — the two
+5. Automated tests around the state machine and the money arithmetic: the two
    places where a silent bug costs real money.
 
 **How AI tools were used.** This implementation was built with Claude Code.
-The parts that needed human judgement — and got it — were the workflow state
+The parts that needed human judgement (and got it) were the workflow state
 machine, the decision to derive rather than collect fields in the technician
 form, and the schema-fallback behaviour, which came from actually probing the
 live database and finding that none of the new columns existed yet.

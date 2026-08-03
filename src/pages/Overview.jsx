@@ -164,7 +164,7 @@ function Overview({ onNavigate, today }) {
           <Card padded={false}>
             <CardHeader
               title="Recent orders"
-              subtitle="Newest first — select one to see its full record"
+              subtitle="Newest first. Select one to see its full record."
               actions={
                 <button
                   onClick={() => onNavigate?.('orders')}
@@ -238,7 +238,7 @@ function NextAction({ role, orders, onNavigate }) {
           text:
             waiting > 0
               ? `${waiting} completed job${waiting === 1 ? '' : 's'} waiting for your review`
-              : 'Nothing waiting for review — every completed job is signed off',
+              : 'Nothing waiting for review. Every completed job is signed off.',
           cta: 'Open review queue',
           go: 'review',
         }

@@ -179,7 +179,7 @@ function Performance() {
       <Card padded={false}>
         <CardHeader
           title="Leaderboard"
-          subtitle={`Ranked by jobs completed ${label} — ties broken by value`}
+          subtitle={`Ranked by jobs completed ${label}. Ties are broken by value.`}
         />
 
         {loading ? (

@@ -278,13 +278,13 @@ function TechnicianPortal() {
       >
         <p className="mb-3 text-sm text-slate">
           The job goes back to <span className="font-medium text-ink">Assigned</span> and the
-          postpone count increases — managers track this on the KPI dashboard.
+          postpone count increases, which managers track on the KPI dashboard.
         </p>
         <Textarea
           rows={3}
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Reason — e.g. customer not at home, part out of stock"
+          placeholder="Reason, e.g. customer not at home, or a part is out of stock"
         />
       </Sheet>
     </>

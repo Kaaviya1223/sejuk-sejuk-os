@@ -49,7 +49,7 @@ function WhatsAppPreview({ notification, compact = false, step }) {
           ) : (
             <p className="flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-300">
               <AlertTriangle size={11} className="shrink-0" />
-              No number on file — pick a contact in WhatsApp
+              No number on file. Pick a contact in WhatsApp.
             </p>
           )}
         </div>
