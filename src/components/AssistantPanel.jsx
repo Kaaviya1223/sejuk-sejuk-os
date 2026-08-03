@@ -216,8 +216,29 @@ function Exchange({ entry }) {
               {result.params?.range && <Tag>{result.params.range}</Tag>}
               {result.params?.technician && <Tag>{result.params.technician}</Tag>}
               <Tag>{result.retrieval.rowCount} rows</Tag>
-              {result.phrasedBy === 'computed' && <Tag tone="warn">worded without the model</Tag>}
-              {result.routedBy === 'keywords' && <Tag tone="warn">routed by keywords</Tag>}
+
+              {/* One quiet chip rather than two amber ones. The disclosure has
+                  to stay — silently switching to keyword routing would leave a
+                  reader with no way to explain a crudely-read question — but
+                  the numbers are computed either way, so it is a footnote, not
+                  a warning. The detail is on hover. */}
+              {(result.routedBy === 'keywords' || result.phrasedBy === 'computed') && (
+                <Tag
+                  title={[
+                    result.routedBy === 'keywords'
+                      ? 'Your question was matched by keyword rather than read by the model, so an unusual phrasing may be read crudely.'
+                      : null,
+                    result.phrasedBy === 'computed'
+                      ? 'The sentence came from a template.'
+                      : null,
+                    'The figures are computed from the database either way.',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  without the model
+                </Tag>
+              )}
             </div>
 
             <div className="mt-2">
@@ -261,14 +282,11 @@ function Exchange({ entry }) {
   )
 }
 
-function Tag({ children, tone = 'neutral' }) {
+function Tag({ children, title }) {
   return (
     <span
-      className={`rounded-full px-2 py-0.5 ${
-        tone === 'warn'
-          ? 'bg-amber-50 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300'
-          : 'bg-frost-deep text-slate'
-      }`}
+      title={title}
+      className={`rounded-full bg-frost-deep px-2 py-0.5 text-slate ${title ? 'cursor-help' : ''}`}
     >
       {children}
     </span>
