@@ -14,6 +14,7 @@ import {
 import { Alert, Card, CardHeader, PageHeader, Stat } from '../components/ui.jsx'
 import { CompletionMeter, StatusMix, TechnicianLoad } from '../components/charts.jsx'
 import OrderList from '../components/OrderList.jsx'
+import SupervisorCard from '../components/SupervisorCard.jsx'
 import OrderDetailSheet from '../components/OrderDetailSheet.jsx'
 import { useSession } from '../context/session.js'
 import { shortMoney } from '../lib/format.js'
@@ -160,6 +161,10 @@ function Overview({ onNavigate, today }) {
             <TechnicianLoad orders={orders} technicians={technicians} loading={loading} />
           </div>
         </Card>
+
+        <SupervisorCard
+          onOpenOrder={(orderNo) => setSelected(orders.find((o) => o.order_no === orderNo) ?? null)}
+        />
 
         <Card padded={false} className="lg:col-span-2">
           <CardHeader

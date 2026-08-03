@@ -6,9 +6,9 @@ record — evidence photos, final amount, payment, audit trail — comes back to
 the office.
 
 **Scope of this submission: Modules 1, 2 and 3, the KPI dashboard, and the AI
-Operations Query Window** — including every WhatsApp bonus. Of the optional
-advanced AI challenges, operational insight is covered; document understanding
-and the workflow supervisor are not. See
+Operations Query Window** — including every WhatsApp bonus. Two of the three
+optional advanced AI challenges are covered as well: the workflow supervisor
+and operational insight. Document understanding is not. See
 [What is not built](#what-is-not-built).
 
 ---
@@ -116,6 +116,26 @@ postponements, and a leaderboard ranked by jobs with value as the tie-break.
 The period selector covers this week, last week, this month and all time —
 weeks start Monday. Completed jobs are dated by completion, everything else by
 when it was raised.
+
+### Advanced AI — Workflow Supervisor
+
+A **Needs attention** card on the dashboard, backed by
+[`api/supervise.js`](api/supervise.js). It re-reads completed jobs and applies
+four rules, each stating its own threshold in code:
+
+| Rule | Fires when |
+| --- | --- |
+| Over quote | final is 30% above quoted **and** at least RM 50 over — a ratio alone flags a RM 20 job |
+| No evidence | completed with zero files in `job_files` |
+| Postponed repeatedly | `reschedule_count` ≥ 2 |
+| Waiting on review | `Job Done` for 3 days or more |
+
+The rules are the flags; the model writes only the one-line triage at the top,
+and the card says when it wrote itself instead. A supervisor that quietly
+changes its mind about what "much higher than quoted" means is not a
+supervisor, so the thresholds live in `RULES` where they can be read and
+argued with. Missing `job_files` means "cannot tell" rather than "no evidence",
+so the rule sits out rather than flagging every job.
 
 ### AI Module — Operations Query Window
 
@@ -396,9 +416,13 @@ as out of scope.
   `wa.me` deep link; a human still taps send. There are no WhatsApp Business
   API credentials for this build, and the brief accepts a deep link. Swapping in
   a provider means replacing one function in `api/notify.js`.
-- **Advanced AI challenges** — document understanding and the workflow
-  supervisor. The third one, operational insight, is covered: the
-  `technician_workload` intent flags anyone running 30% above the team average.
+- **AI document understanding** — the third advanced challenge. Extracting
+  fields from an uploaded invoice needs a vision call per document, and the
+  evidence already arrives as structured fields typed by the technician, so it
+  would be re-deriving what the form already collected. The other two advanced
+  challenges are built: the workflow supervisor above, and operational insight
+  via the `technician_workload` intent, which flags anyone running 30% above
+  the team average.
 - **A manager review queue.** Managers review and close from the order detail
   sheet, which the state machine drives correctly, but there is no page that
   gathers everything sitting at `Job Done` into one queue.
