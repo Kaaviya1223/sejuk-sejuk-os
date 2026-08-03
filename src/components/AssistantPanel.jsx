@@ -149,7 +149,7 @@ function AssistantPanel({ open, onClose }) {
               e.preventDefault()
               ask()
             }}
-            className="flex items-center gap-2 rounded-xl border border-slate-line bg-surface px-2.5 py-1.5 focus-within:border-marine-500 focus-within:ring-2 focus-within:ring-marine-500/25"
+            className="flex items-center gap-2 rounded-xl border border-slate-line bg-surface px-2.5 py-1.5 focus-within:border-marine-500"
           >
             <input
               ref={inputRef}
