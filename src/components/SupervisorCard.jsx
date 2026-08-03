@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { AlertTriangle, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react'
+import { RefreshCw, ShieldCheck, Sparkles } from 'lucide-react'
 
 import { Card, CardHeader, EmptyState, Skeleton } from './ui.jsx'
 import { money } from '../lib/format.js'
@@ -38,6 +38,7 @@ function SupervisorCard({ onOpenOrder }) {
       <CardHeader
         title="Needs attention"
         subtitle="Completed jobs the supervisor flagged"
+        accent="warn"
         actions={
           <button
             onClick={load}
@@ -82,47 +83,61 @@ function SupervisorCard({ onOpenOrder }) {
                 Every completed job passed the checks.
               </EmptyState>
             ) : (
-              /* Bounded so a bad week cannot stretch the dashboard — the list
-                 scrolls inside the card and the count below says what is
-                 out of view. */
-              <ul className="max-h-[26rem] space-y-2 overflow-y-auto pr-0.5">
-                {data.flagged.slice(0, 6).map((f) => (
-                  <li key={f.order_no}>
-                    <button
-                      onClick={() => onOpenOrder?.(f.order_no)}
-                      className="w-full rounded-xl border border-slate-line bg-surface p-3 text-left transition hover:border-coolant/50 hover:bg-frost/50"
-                    >
-                      <div className="flex items-center gap-2">
-                        <AlertTriangle
-                          size={13}
-                          className={f.severity === 'high' ? 'text-copper' : 'text-slate-light'}
-                        />
-                        <span className="tabular-nums text-sm font-medium text-ink">
-                          {f.order_no}
-                        </span>
-                        <span className="truncate text-xs text-slate">{f.technician ?? '—'}</span>
-                        <span className="ml-auto shrink-0 text-xs tabular-nums text-slate">
-                          {money(f.final_amount)}
-                        </span>
-                      </div>
+              /* Bounded so a bad week cannot stretch the dashboard. The
+                 scrollbar is hidden because a visible one inside a card reads
+                 as a second window; the count below says what is out of view. */
+              <ul className="no-scrollbar max-h-[26rem] space-y-1.5 overflow-y-auto">
+                {data.flagged.slice(0, 6).map((f) => {
+                  const serious = f.severity === 'high'
+                  return (
+                    <li key={f.order_no}>
+                      <button
+                        onClick={() => onOpenOrder?.(f.order_no)}
+                        /* A severity edge and a tinted ground, so this list
+                           cannot be mistaken for the neutral order table it
+                           sits beside. */
+                        className={`w-full rounded-lg border-l-[3px] py-2.5 pl-3 pr-3 text-left transition ${
+                          serious
+                            ? 'border-copper bg-copper/[0.06] hover:bg-copper/[0.12]'
+                            : 'border-slate-light bg-frost/70 hover:bg-frost'
+                        }`}
+                      >
+                        <div className="flex items-baseline gap-2">
+                          <span className="tabular-nums text-sm font-medium text-ink">
+                            {f.order_no}
+                          </span>
+                          <span className="truncate text-xs text-slate">{f.technician ?? '—'}</span>
+                          <span className="ml-auto shrink-0 text-xs tabular-nums text-slate">
+                            {money(f.final_amount)}
+                          </span>
+                        </div>
 
-                      <ul className="mt-1.5 space-y-1">
-                        {f.reasons.map((r) => (
-                          <li key={r.key} className="flex items-start gap-1.5 text-[11px]">
+                        {/* Labels as chips: the "why" at a glance, in the shape
+                            of a badge rather than another line of prose. */}
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {f.reasons.map((r) => (
                             <span
-                              className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${
-                                r.severity === 'high' ? 'bg-copper' : 'bg-slate-light'
+                              key={r.key}
+                              title={r.detail}
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                r.severity === 'high'
+                                  ? 'bg-copper/15 text-copper dark:text-[#E2A288]'
+                                  : 'bg-frost-deep text-slate'
                               }`}
-                            />
-                            <span className="text-slate">
-                              <span className="font-medium text-ink">{r.label}.</span> {r.detail}
+                            >
+                              {r.label}
                             </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </button>
-                  </li>
-                ))}
+                          ))}
+                        </div>
+
+                        {/* One line of specifics — the rest are on the order. */}
+                        <p className="mt-1.5 line-clamp-2 text-[11px] leading-snug text-slate">
+                          {f.reasons[0].detail}
+                        </p>
+                      </button>
+                    </li>
+                  )
+                })}
               </ul>
             )}
 

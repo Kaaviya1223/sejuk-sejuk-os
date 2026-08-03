@@ -62,7 +62,7 @@ export function Card({ children, className = '', padded = true }) {
  * Card headings are the dashboard's signposts, so they carry the brand blue
  * at a weight you can find while scanning — the body underneath stays quiet.
  */
-export function CardHeader({ title, subtitle, actions, divided = true }) {
+export function CardHeader({ title, subtitle, actions, divided = true, accent = 'brand' }) {
   return (
     <div
       className={`flex items-start justify-between gap-3 bg-gradient-to-b from-frost/50 to-transparent px-5 py-4 ${
@@ -70,10 +70,14 @@ export function CardHeader({ title, subtitle, actions, divided = true }) {
       }`}
     >
       <div className="min-w-0">
-        {/* A short brand rule above the title — the card's own signature. */}
+        {/* A short rule above the title — the card's own signature. `warn`
+            marks the cards that are asking for something rather than
+            reporting, so they don't read as one more panel of numbers. */}
         <span
           aria-hidden
-          className="mb-2 block h-1 w-8 rounded-full bg-gradient-to-r from-coolant to-marine-500"
+          className={`mb-2 block h-1 w-8 rounded-full bg-gradient-to-r ${
+            accent === 'warn' ? 'from-copper to-amber-500' : 'from-coolant to-marine-500'
+          }`}
         />
         <h2 className="font-display text-base font-semibold tracking-tight text-brand">
           {title}
