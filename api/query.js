@@ -291,6 +291,39 @@ Question: "${question}"`
 
 /** Subjects this system models. Nothing else may be answered from job rows. */
 const ON_TOPIC = /job|order|service|complete|finish|technician|tech\b|workload|overload|busiest/
+
+/**
+ * Small talk gets an answer in kind. Someone typing "hi" is not making a query
+ * and should not be read a policy statement — but they should leave the
+ * exchange knowing what to ask next.
+ *
+ * Handled here, before the classifier: it costs no model call and no query, so
+ * it works with the quota exhausted. A greeting attached to a real question
+ * ("hi, how many jobs today?") falls through to the real question.
+ */
+const SMALL_TALK = [
+  {
+    test: /^\s*(hi|hai|hey|hello|helo|yo|good (morning|afternoon|evening))\b/i,
+    reply:
+      'Hi. I can tell you about completed work — how many jobs, who finished them, and how the workload is spread. Try "How many jobs were completed today?"',
+  },
+  {
+    test: /\b(thanks|thank you|thx|terima kasih)\b/i,
+    reply: 'Anytime. Ask whenever you need a count.',
+  },
+  { test: /\b(bye|goodbye|see you|selamat tinggal)\b/i, reply: 'See you.' },
+  {
+    test: /\b(who|what) are you\b|what can you do|help\b/i,
+    reply:
+      'I answer four things from the order records: jobs completed by a technician, who completed the most, how many were completed in a period, and how the workload is spread across the team. Every answer shows the rows it came from.',
+  },
+]
+
+function smallTalk(question) {
+  // A greeting wrapped around a real question is a question, not a greeting.
+  if (ON_TOPIC.test(question.toLowerCase())) return null
+  return SMALL_TALK.find((s) => s.test.test(question))?.reply ?? null
+}
 /**
  * Subjects it plainly does *not* model. "How many customers do we have?"
  * shares its wording with a job count, and answering it from job rows would be
@@ -355,6 +388,12 @@ export default async function handler(req, res) {
   if (question.length > 300) return res.status(400).json({ error: 'Question is too long.' })
 
   try {
+    // Answered without a model call or a query — see SMALL_TALK.
+    const chat = smallTalk(question)
+    if (chat) {
+      return res.status(200).json({ intent: 'small_talk', answer: chat, routedBy: 'small talk' })
+    }
+
     const names = await roster()
 
     let route

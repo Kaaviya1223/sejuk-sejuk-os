@@ -310,10 +310,15 @@ descriptor — table, columns, filters, row count — and the UI renders it unde
 Periods understood: today, yesterday, this week, last week, this month, all
 time. Weeks start on Monday and "today" means today in UTC+8.
 
+Small talk answers in kind — "hi", "thanks", "what can you do?" get a reply
+and a nudge toward a real question, handled before the classifier so they cost
+no model call and no query. A greeting wrapped around a real question ("hi, how
+many jobs today?") is treated as the question.
+
 Anything else is refused before a query runs, with a list of what the assistant
-does support — it does not guess. Small talk ("hi"), off-topic questions ("what
-is the weather?"), a name that is not on the roster, and an instruction to
-ignore its instructions all return the same refusal, having touched no data.
+does support — it does not guess. Off-topic questions ("what is the weather?"),
+a name that is not on the roster, and an instruction to ignore its instructions
+all return the same refusal, having touched no data.
 
 The keyword router carries an explicit off-scope list too, because "how many
 customers do we have?" shares its wording with a job count: answering that from
