@@ -15,6 +15,7 @@ import {
 } from '../components/ui.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import JobCompletionSheet from '../components/JobCompletionSheet.jsx'
+import OrderDetailSheet from '../components/OrderDetailSheet.jsx'
 import WhatsAppPreview from '../components/WhatsAppPreview.jsx'
 import { useSession } from '../context/session.js'
 import { dateOnly, displayPhone, money, relativeTime } from '../lib/format.js'
@@ -38,6 +39,7 @@ function TechnicianPortal() {
   const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(null)
   const [result, setResult] = useState(null)
+  const [viewing, setViewing] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -207,7 +209,14 @@ function TechnicianPortal() {
             >
               <div className="-mx-4 -my-3 divide-y divide-slate-line">
                 {finished.slice(0, 10).map((order) => (
-                  <div key={order.id} className="flex items-center gap-3 px-4 py-3">
+                  /* The chevron promised this opened; now it does. A technician
+                     reviewing finished work wants what they submitted — the
+                     write-up, the amount, the photos, the messages sent. */
+                  <button
+                    key={order.id}
+                    onClick={() => setViewing(order)}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-frost"
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="tabular-nums text-sm text-ink">{order.order_no}</span>
@@ -219,13 +228,25 @@ function TechnicianPortal() {
                       </p>
                     </div>
                     <ChevronRight size={15} className="shrink-0 text-slate-light" />
-                  </div>
+                  </button>
                 ))}
               </div>
             </Section>
           )}
         </div>
       )}
+
+      {/* Read-only in practice: the state machine offers a technician no
+          transition out of Job Done, Reviewed or Closed. */}
+      <OrderDetailSheet
+        order={viewing}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        onChanged={(updated) => {
+          setViewing(updated)
+          setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)))
+        }}
+      />
 
       <JobCompletionSheet
         order={completing}
