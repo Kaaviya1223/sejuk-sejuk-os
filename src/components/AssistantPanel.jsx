@@ -49,19 +49,29 @@ function AssistantPanel({ open, onClose }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
+  /**
+   * The question is posted to the thread and the box cleared before the
+   * request goes out. Waiting for the response to do either left the typed
+   * text sitting in the box with an empty conversation above it — it looked
+   * like nothing had been sent.
+   */
   const ask = async (text) => {
     const q = (text ?? question).trim()
     if (!q || loading) return
 
+    const id = `${Date.now()}-${q.length}`
+    setThread((prev) => [...prev, { id, question: q, result: null, error: null }])
+    setQuestion('')
     setLoading(true)
     setError(null)
+
     try {
       const result = await postJson('/api/query', { question: q })
-
-      setThread((prev) => [...prev, { question: q, result }])
-      setQuestion('')
+      setThread((prev) => prev.map((e) => (e.id === id ? { ...e, result } : e)))
     } catch (err) {
-      setError(err.message)
+      // The failure belongs against the question that caused it, not floating
+      // at the bottom of the panel.
+      setThread((prev) => prev.map((e) => (e.id === id ? { ...e, error: err.message } : e)))
     } finally {
       setLoading(false)
     }
@@ -110,13 +120,10 @@ function AssistantPanel({ open, onClose }) {
         <div className="flex-1 space-y-3 overflow-y-auto bg-frost/40 p-3">
           {thread.length === 0 && !loading && <Primer />}
 
-          {thread.map((entry, i) => (
-            <Exchange key={i} entry={entry} />
+          {thread.map((entry) => (
+            <Exchange key={entry.id} entry={entry} />
           ))}
 
-          {loading && (
-            <p className="px-1 py-2 text-xs text-slate">Retrieving and computing…</p>
-          )}
           {error && <Alert tone="error">{error}</Alert>}
           <div ref={endRef} />
         </div>
@@ -142,7 +149,7 @@ function AssistantPanel({ open, onClose }) {
               e.preventDefault()
               ask()
             }}
-            className="flex items-center gap-2 rounded-xl border border-slate-line bg-surface px-2.5 py-1.5 focus-within:border-coolant focus-within:ring-2 focus-within:ring-coolant/25"
+            className="flex items-center gap-2 rounded-xl border border-slate-line bg-surface px-2.5 py-1.5 focus-within:border-marine-500 focus-within:ring-2 focus-within:ring-marine-500/25"
           >
             <input
               ref={inputRef}
@@ -189,11 +196,11 @@ function Primer() {
 }
 
 function Exchange({ entry }) {
-  const { question, result } = entry
+  const { question, result, error } = entry
 
   return (
     <div className="space-y-2">
-      {/* The question, as the reader asked it. */}
+      {/* The question, as the reader asked it — posted the moment they send. */}
       <p className="ml-auto w-fit max-w-[85%] rounded-xl rounded-br-sm bg-marine-100 px-3 py-2 text-sm text-ink">
         {question}
       </p>
@@ -203,16 +210,34 @@ function Exchange({ entry }) {
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-coolant-50 text-coolant">
             <Sparkles size={14} />
           </span>
-          <p className="whitespace-pre-line text-sm leading-relaxed text-ink">{result.answer}</p>
+
+          {error ? (
+            <p className="text-sm leading-relaxed text-slate">{error}</p>
+          ) : result ? (
+            <p className="whitespace-pre-line text-sm leading-relaxed text-ink">{result.answer}</p>
+          ) : (
+            /* Waiting, in the place the answer will appear. */
+            <span className="flex items-center gap-1.5 py-1" aria-label="Working">
+              {[0, 150, 300].map((delay) => (
+                <span
+                  key={delay}
+                  className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-light"
+                  style={{ animationDelay: `${delay}ms` }}
+                />
+              ))}
+            </span>
+          )}
         </div>
 
-        {result.retrieval && (
+        {result?.retrieval && (
           <>
             <div className="mt-2.5 flex flex-wrap gap-1.5 text-[11px]">
               <Tag>{result.intentLabel ?? result.intent}</Tag>
               {result.params?.range && <Tag>{result.params.range}</Tag>}
               {result.params?.technician && <Tag>{result.params.technician}</Tag>}
-              <Tag>{result.retrieval.rowCount} rows</Tag>
+              <Tag>
+                {result.retrieval.rowCount} row{result.retrieval.rowCount === 1 ? '' : 's'}
+              </Tag>
 
               {/* One quiet chip rather than two amber ones. The disclosure has
                   to stay — silently switching to keyword routing would leave a
