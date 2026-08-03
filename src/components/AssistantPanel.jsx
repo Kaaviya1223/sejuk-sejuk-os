@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Database, Send, Sparkles, X } from 'lucide-react'
+import { Send, Sparkles, X } from 'lucide-react'
 
-import { Alert, Section } from './ui.jsx'
-import { dateOnly, money } from '../lib/format.js'
+import { Alert } from './ui.jsx'
 import { postJson } from '../lib/api.js'
 
 /**
@@ -13,11 +12,11 @@ import { postJson } from '../lib/api.js'
  * dashboard or an order, so making someone navigate away to ask them — and
  * navigate back to act — was the wrong shape.
  *
- * Every answer ships with the retrieval that produced it: which table, which
- * columns, which filters, how many rows. A manager about to act on "Bala is
- * overloaded" should be able to see the jobs that claim was counted from, and
- * a reviewer should be able to tell the model was handed those rows rather
- * than the database.
+ * Each answer carries the intent it was read as, the period, and how many rows
+ * were counted — enough to tell whether the question was understood. The full
+ * retrieval descriptor is still in the response body for anyone who wants to
+ * audit it; it is not rendered, because a column list is developer language in
+ * a tool built for operations staff.
  */
 
 const SUGGESTIONS = [
@@ -176,8 +175,7 @@ function Primer() {
       <p className="text-sm font-medium text-ink">Ask about completed work</p>
       <p className="mt-1 text-xs text-slate">
         The model turns your question into an intent, the server runs one declared query, the
-        numbers are computed in code, and the model writes the sentence around them. Every answer
-        shows the rows it used.
+        numbers are computed in code, and the model writes the sentence around them.
       </p>
       <ul className="mt-3 space-y-1.5">
         {SUGGESTIONS.map((s) => (
@@ -192,7 +190,6 @@ function Primer() {
 
 function Exchange({ entry }) {
   const { question, result } = entry
-  const rows = result.rows ?? []
 
   return (
     <div className="space-y-2">
@@ -239,41 +236,6 @@ function Exchange({ entry }) {
                   without the model
                 </Tag>
               )}
-            </div>
-
-            <div className="mt-2">
-              <Section title="Data used" icon={Database} defaultOpen={false}>
-                <p className="mb-2 break-words text-[11px] text-slate">
-                  <span className="font-medium text-ink">
-                    select {result.retrieval.columns.join(', ')} from {result.retrieval.table}
-                  </span>
-                  {result.retrieval.filters.map((f) => (
-                    <span key={f} className="block">
-                      where {f}
-                    </span>
-                  ))}
-                  <span className="block">limit {result.retrieval.limit}</span>
-                </p>
-
-                {rows.length === 0 ? (
-                  <p className="py-1 text-xs text-slate-light">No rows matched.</p>
-                ) : (
-                  <ul className="-mx-4 divide-y divide-slate-line border-y border-slate-line">
-                    {rows.map((r) => (
-                      <li key={r.order_no} className="flex items-baseline gap-2 px-4 py-1.5 text-xs">
-                        <span className="tabular-nums text-ink">{r.order_no}</span>
-                        <span className="truncate text-slate">{r.assigned_technician ?? '—'}</span>
-                        <span className="ml-auto shrink-0 text-slate-light">
-                          {dateOnly(r.completed_at)}
-                        </span>
-                        <span className="shrink-0 tabular-nums text-ink">
-                          {money(r.final_amount)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Section>
             </div>
           </>
         )}

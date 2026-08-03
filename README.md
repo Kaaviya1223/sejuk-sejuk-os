@@ -338,10 +338,12 @@ customer's phone number cannot reach the model because someone asked about job
 counts. A technician name coming back from the classifier is only used after it
 matches a row in `technicians` — the model cannot invent a filter value.
 
-**The answer shows its own evidence.** Every response carries the retrieval
-descriptor — table, columns, filters, row count — and the UI renders it under
-"Data used for this answer", along with the rows themselves. A manager acting on
-"Bala is overloaded" can see the jobs that claim was counted from.
+**Every answer carries its own receipt.** The response body includes the
+retrieval descriptor — table, columns, filters, row count — and the rows it
+counted, so the claim is auditable rather than asserted. The panel itself shows
+the intent it was read as, the period and the row count; the column list stays
+in the response rather than on screen, because it is developer language in a
+tool built for operations staff.
 
 ### What you can ask
 
