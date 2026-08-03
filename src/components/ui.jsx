@@ -135,17 +135,28 @@ export function Button({
   )
 }
 
+/**
+ * A labelled field.
+ *
+ * A short hint ("RM", "Optional") rides the label line as a suffix. A longer
+ * one moves below the input: sharing the line made the label wrap, which made
+ * that cell taller than its neighbour and knocked the two columns out of
+ * alignment. The label always gets one line to itself.
+ */
 export function Field({ label, hint, error, required, children, className = '' }) {
+  const inline = hint && String(hint).length <= 12
+
   return (
     <label className={`block ${className}`}>
       <span className="mb-1.5 flex items-baseline justify-between gap-2">
-        <span className="text-sm font-medium text-ink">
+        <span className="truncate text-sm font-medium text-ink">
           {label}
           {required && <span className="ml-0.5 text-copper">*</span>}
         </span>
-        {hint && <span className="text-xs text-slate-light">{hint}</span>}
+        {inline && <span className="shrink-0 text-xs text-slate-light">{hint}</span>}
       </span>
       {children}
+      {hint && !inline && <span className="mt-1 block text-xs text-slate-light">{hint}</span>}
       {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
     </label>
   )
