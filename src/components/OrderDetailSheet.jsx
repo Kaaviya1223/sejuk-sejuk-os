@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Children, isValidElement, useCallback, useEffect, useState } from 'react'
 import { FileText, Paperclip, Send } from 'lucide-react'
 
 import { Alert, Button, Pill, Select, Sheet, Textarea } from './ui.jsx'
@@ -191,34 +191,49 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
         </div>
 
         {tab === 'details' && (
-          <div className="space-y-4">
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-              <Detail label="Customer" value={order.customer_name} />
+          <div className="space-y-5">
+            {/* Grouped, because one flat list of eighteen label/value pairs
+                reads as a data dump. Optional fields that are empty are left
+                out entirely rather than printing a dash — an absent remark is
+                not information. */}
+            <Group title="Customer">
+              <Detail label="Name" value={order.customer_name} />
               <Detail label="Phone" value={displayPhone(order.phone)} numeric />
               <Detail label="Address" value={order.address} span />
+            </Group>
+
+            <Group title="The job">
               <Detail label="Problem reported" value={order.problem_description} span />
               <Detail label="Service type" value={order.service_type} />
               <Detail label="Assigned technician" value={order.assigned_technician} />
-              <Detail label="Quoted price" value={money(order.quoted_price)} numeric />
-              <Detail label="Extra charges" value={money(order.extra_charges)} numeric />
-              <Detail label="Final amount" value={money(order.final_amount)} numeric />
-              <Detail
-                label="Payment"
-                value={
-                  order.payment_method
-                    ? `${order.payment_method} — ${money(order.payment_amount)}`
-                    : null
-                }
-              />
               <Detail label="Work done" value={order.work_done} span />
               <Detail label="Technician remarks" value={order.remarks} span />
               <Detail label="Admin notes" value={order.admin_notes} span />
+            </Group>
+
+            {/* The money reads as a sum, so it is laid out as one. */}
+            <Group title="Money">
+              <div className="col-span-full flex flex-wrap items-baseline gap-x-6 gap-y-2 rounded-xl bg-frost/70 px-3.5 py-3">
+                <Amount label="Quoted" value={order.quoted_price} />
+                <Amount label="Extra charges" value={order.extra_charges} />
+                <Amount label="Final" value={order.final_amount} strong />
+                {order.payment_method && (
+                  <span className="ml-auto text-xs text-slate">
+                    Paid by{' '}
+                    <span className="font-medium text-ink">{order.payment_method}</span> ·{' '}
+                    <span className="tabular-nums text-ink">{money(order.payment_amount)}</span>
+                  </span>
+                )}
+              </div>
+            </Group>
+
+            <Group title="History">
               <Detail label="Created" value={dateTime(order.created_at)} />
-              <Detail label="Completed" value={dateTime(order.completed_at)} />
+              <Detail label="Completed" value={order.completed_at ? dateTime(order.completed_at) : null} />
               <Detail label="Completed by" value={order.completed_by} />
               <Detail label="Reviewed by" value={order.reviewed_by} />
               <Detail label="Review notes" value={order.review_notes} span />
-            </dl>
+            </Group>
 
             {isAdmin && order.status !== 'Closed' && (
               <div className="rounded-xl border border-slate-line bg-frost/60 p-3">
@@ -356,12 +371,50 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
   )
 }
 
+/**
+ * A titled block of fields. Renders nothing if every field inside it is empty,
+ * so an order with no review yet doesn't show a "History" heading over four
+ * dashes.
+ */
+function Group({ title, children }) {
+  const filled = Children.toArray(children).filter((child) => {
+    if (!isValidElement(child)) return Boolean(child)
+    // Non-Detail children (the money row) carry their own emptiness rules.
+    return child.type !== Detail || Boolean(child.props.value)
+  })
+  if (!filled.length) return null
+
+  return (
+    <section>
+      <h3 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-wide text-brand">
+        {title}
+      </h3>
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">{filled}</dl>
+    </section>
+  )
+}
+
+/** One figure in the money row. */
+function Amount({ label, value, strong = false }) {
+  return (
+    <span>
+      <span className="block text-[11px] uppercase tracking-wide text-slate-light">{label}</span>
+      <span
+        className={`block tabular-nums text-ink ${strong ? 'text-lg font-semibold' : 'text-sm'}`}
+      >
+        {money(value)}
+      </span>
+    </span>
+  )
+}
+
 function Detail({ label, value, numeric = false, span = false }) {
+  if (!value) return null
   return (
     <div className={span ? 'sm:col-span-2' : ''}>
       <dt className="text-[11px] uppercase tracking-wide text-slate-light">{label}</dt>
-      <dd className={`mt-0.5 text-sm text-ink ${numeric ? 'tabular-nums' : ''}`}>
-        {value || <span className="text-slate-light">—</span>}
+      <dd className={`mt-0.5 whitespace-pre-line text-sm text-ink ${numeric ? 'tabular-nums' : ''}`}>
+        {value}
       </dd>
     </div>
   )
