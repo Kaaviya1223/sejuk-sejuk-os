@@ -13,6 +13,7 @@ import {
 
 import { SessionProvider } from './context/SessionContext.jsx'
 import { useSession } from './context/session.js'
+import AssistantPanel from './components/AssistantPanel.jsx'
 import NotificationBell from './components/NotificationBell.jsx'
 import ThemeToggle from './components/ThemeToggle.jsx'
 import RoleSwitcher from './components/RoleSwitcher.jsx'
@@ -21,7 +22,6 @@ import { dateOnly } from './lib/format.js'
 
 import Overview from './pages/Overview.jsx'
 import AdminOrders from './pages/AdminOrders.jsx'
-import OpsAssistant from './pages/OpsAssistant.jsx'
 import Performance from './pages/Performance.jsx'
 import TechnicianPortal from './pages/TechnicianPortal.jsx'
 
@@ -29,7 +29,6 @@ const NAV = [
   { key: 'overview', label: 'Dashboard', icon: LayoutDashboard, roles: ['Admin', 'Manager'] },
   { key: 'orders', label: 'Orders', icon: ClipboardList, roles: ['Admin', 'Manager'] },
   { key: 'performance', label: 'Performance', icon: Trophy, roles: ['Admin', 'Manager'] },
-  { key: 'assistant', label: 'Assistant', icon: Sparkles, roles: ['Manager'] },
   { key: 'jobs', label: 'My Jobs', icon: Wrench, roles: ['Technician'] },
 ]
 
@@ -37,7 +36,6 @@ const PAGES = {
   overview: Overview,
   orders: AdminOrders,
   performance: Performance,
-  assistant: OpsAssistant,
   jobs: TechnicianPortal,
 }
 
@@ -74,6 +72,7 @@ function Shell() {
   const [view, setView] = useState(() => window.location.hash.slice(1) || 'overview')
   const [menuOpen, setMenuOpen] = useState(false)
   const [railOpen, setRailOpen] = useState(true)
+  const [assistantOpen, setAssistantOpen] = useState(false)
 
   const available = NAV.filter((item) => item.roles.includes(session.role))
 
@@ -147,6 +146,17 @@ function Shell() {
         {/* One control, and it does what it says. The Support and Schedule
             icons that used to sit here were decoration with no handler. */}
         <div className="ml-auto flex items-center gap-1">
+          {/* The assistant answers questions about what you are already looking
+              at, so it opens beside the page rather than replacing it. */}
+          {session.role === 'Manager' && (
+            <button
+              onClick={() => setAssistantOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-line px-2.5 py-1.5 text-xs font-medium text-brand transition hover:bg-frost"
+            >
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">Ask</span>
+            </button>
+          )}
           <ThemeToggle />
           <NotificationBell />
         </div>
@@ -201,6 +211,8 @@ function Shell() {
             aria-label="Close navigation"
           />
         )}
+
+        <AssistantPanel open={assistantOpen} onClose={() => setAssistantOpen(false)} />
 
         {/* No top padding: the page's brand band butts up against the top bar. */}
         <main className="min-w-0 flex-1 px-4 pb-8 sm:px-6 lg:px-8">

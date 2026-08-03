@@ -119,7 +119,7 @@ when it was raised.
 
 ### AI Module — Operations Query Window
 
-A manager-only Assistant page answering four kinds of operational question from
+A manager-only side panel answering four kinds of operational question from
 live data. The model classifies the question and phrases the result; the query
 and every number in between are server-side code. Each answer shows the exact
 retrieval behind it. Full detail, including what it cannot do, is in
@@ -228,10 +228,11 @@ src/
                palette.js (status colours shared by badges and charts)
   context/     SessionContext.jsx (mock login) · session.js (hook)
   components/  ui.jsx (design primitives) · charts.jsx (dashboard figures)
+               AssistantPanel.jsx (AI query window) · NotificationBell.jsx
                OrderList · OrderDetailSheet · JobCompletionSheet
                WhatsAppPreview · StatusBadge · StatusTrack
   pages/       Overview.jsx · AdminOrders.jsx · TechnicianPortal.jsx
-               Performance.jsx (KPI) · OpsAssistant.jsx (AI query window)
+               Performance.jsx (KPI)
 api/
   notify.js    Module 3: the Job Done WhatsApp trigger
   query.js     the AI endpoint: classify → retrieve → compute → phrase
@@ -264,8 +265,10 @@ asks the sender to pick a contact.
 
 ## AI module — Operations Query Window
 
-A manager-only **Assistant** page. Ask a question in English, get an answer
-computed from the database.
+A manager-only side panel, opened with **Ask** in the top bar. It sits beside
+the work rather than on its own page: the questions it answers ("who is
+overloaded this week?") get asked *while* looking at the dashboard or an order,
+so making someone navigate away to ask and back to act was the wrong shape.
 
 ### How it works
 

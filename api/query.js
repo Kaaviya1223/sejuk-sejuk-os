@@ -176,10 +176,13 @@ const INTENTS = {
     run: async ({ range }, names) => {
       const { rows, descriptor } = await fetchCompleted({ range })
       const board = tally(rows, names)
+      // Nobody leads a week with no completed work. Sending a zero-job
+      // "leader" invites the model to announce one.
+      const leader = board[0]?.jobs ? board[0] : null
       return {
         descriptor,
         rows,
-        facts: { period: range.label, leaderboard: board, leader: board[0] ?? null },
+        facts: { period: range.label, leaderboard: leader ? board : [], leader },
       }
     },
     fallback: (f) =>
@@ -296,6 +299,7 @@ function classifyLocally(question, names) {
     (q.includes('yesterday') && 'yesterday') ||
     (q.includes('today') && 'today') ||
     (q.includes('month') && 'this_month') ||
+    ((q.includes('all time') || q.includes('overall') || q.includes('ever')) && 'all_time') ||
     'this_week'
 
   const intent = /overload|workload|busiest|spread|too many/.test(q)
