@@ -289,10 +289,23 @@ Question: "${question}"`
   return JSON.parse(await gemini(prompt, { json: true }))
 }
 
+/** Subjects this system models. Nothing else may be answered from job rows. */
+const ON_TOPIC = /job|order|service|complete|finish|technician|tech\b|workload|overload|busiest/
+/**
+ * Subjects it plainly does *not* model. "How many customers do we have?"
+ * shares its wording with a job count, and answering it from job rows would be
+ * a confident answer to a different question — worse than a refusal.
+ */
+const OFF_SCOPE = /customer|branch|revenue|profit|invoice|payment|salary|stock|part\b|supplier/
+
 /** Keyword routing, used when the model is unavailable or out of quota. */
 function classifyLocally(question, names) {
   const q = question.toLowerCase()
   const technician = names.find((n) => q.includes(n.toLowerCase())) ?? null
+
+  if (OFF_SCOPE.test(q) || (!ON_TOPIC.test(q) && !technician)) {
+    return { intent: 'unsupported', technician: null, range: 'this_week' }
+  }
 
   const range =
     (q.includes('last week') && 'last_week') ||

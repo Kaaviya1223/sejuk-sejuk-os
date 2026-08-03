@@ -311,7 +311,15 @@ Periods understood: today, yesterday, this week, last week, this month, all
 time. Weeks start on Monday and "today" means today in UTC+8.
 
 Anything else is refused before a query runs, with a list of what the assistant
-does support — it does not guess.
+does support — it does not guess. Small talk ("hi"), off-topic questions ("what
+is the weather?"), a name that is not on the roster, and an instruction to
+ignore its instructions all return the same refusal, having touched no data.
+
+The keyword router carries an explicit off-scope list too, because "how many
+customers do we have?" shares its wording with a job count: answering that from
+job rows would be a confident answer to a different question, which is worse
+than a refusal. Branches, customers, revenue, invoices and stock are all named
+as out of scope.
 
 ### Limitations
 
