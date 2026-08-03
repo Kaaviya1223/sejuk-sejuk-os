@@ -357,10 +357,14 @@ tool built for operations staff.
 Periods understood: today, yesterday, this week, last week, this month, all
 time. Weeks start on Monday and "today" means today in UTC+8.
 
-Small talk answers in kind — "hi", "thanks", "what can you do?" get a reply
-and a nudge toward a real question, handled before the classifier so they cost
-no model call and no query. A greeting wrapped around a real question ("hi, how
-many jobs today?") is treated as the question.
+Conversation is answered by the model in its own words. "Nice to meet you"
+deserves a reply rather than a capability list, and no pattern list covers every
+pleasantry. Anything plainly not a data question goes to the model with **no
+data in the prompt** and an instruction never to state a number, name, order or
+date — it can be warm, it cannot make a claim about the company's work. Fixed
+replies for "hi", "thanks" and "what can you do?" stand in when the model is
+unavailable. A greeting wrapped around a real question ("hi, how many jobs
+today?") is treated as the question.
 
 Anything else is refused before a query runs, with a list of what the assistant
 does support — it does not guess. Off-topic questions ("what is the weather?"),
@@ -384,8 +388,10 @@ as out of scope.
   `Closed`, so open jobs are invisible to it.
 - **No conversation memory.** Each question is answered on its own; "and what
   about last month?" will not resolve.
-- **Free-tier quota.** Google AI Studio's free tier runs out quickly. When it
-  does, the endpoint routes by keyword and phrases the answer from a template
+- **Free-tier quota.** Google AI Studio meters per model, so `callGemini` walks
+  a short list — the configured model, then lighter ones — before giving up, and
+  one model's exhausted quota no longer costs the whole feature. When every one
+  is out, the endpoint routes by keyword and phrases the answer from a template
   instead — the numbers are identical because they were never the model's to
   begin with. The response marks this (`routedBy`, `phrasedBy`) and the UI shows
   a badge, so a degraded answer is never passed off as a full one.

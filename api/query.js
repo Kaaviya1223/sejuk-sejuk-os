@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { callGemini } from '../src/lib/gemini.js'
 
 /**
  * AI Module — Operations Query Window (server side).
@@ -19,8 +20,6 @@ import { createClient } from '@supabase/supabase-js'
  * being answered from a table dump.
  */
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash'
-const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
 
@@ -247,31 +246,6 @@ const CAPABILITIES = Object.values(INTENTS).map((i) => i.label)
 /* The model calls                                                     */
 /* ------------------------------------------------------------------ */
 
-async function gemini(prompt, { json = false } = {}) {
-  if (!GEMINI_KEY) throw new Error('no-key')
-
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: json ? 0 : 0.2,
-          ...(json ? { responseMimeType: 'application/json' } : {}),
-        },
-      }),
-    },
-  )
-
-  if (!res.ok) throw new Error(`gemini-${res.status}`)
-  const data = await res.json()
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-  if (!text) throw new Error('gemini-empty')
-  return text.replace(/```json|```/g, '').trim()
-}
-
 /** Step 1 — sentence in, intent + parameters out. Nothing else. */
 async function classify(question, names) {
   const prompt = `You route questions for an air-conditioner service company's operations system.
@@ -286,7 +260,7 @@ or that names a person who is not on the list.
 
 Question: "${question}"`
 
-  return JSON.parse(await gemini(prompt, { json: true }))
+  return JSON.parse(await callGemini(prompt, { json: true }))
 }
 
 /** Subjects this system models. Nothing else may be answered from job rows. */
@@ -323,6 +297,34 @@ function smallTalk(question) {
   // A greeting wrapped around a real question is a question, not a greeting.
   if (ON_TOPIC.test(question.toLowerCase())) return null
   return SMALL_TALK.find((s) => s.test.test(question))?.reply ?? null
+}
+
+/**
+ * Conversation, answered by the model in its own words.
+ *
+ * "Nice to meet you" deserves a reply, not a capability list, and the patterns
+ * above will never cover every pleasantry someone types. So anything that is
+ * plainly not a data question goes to the model — with no data in front of it,
+ * and told plainly not to invent any. It can be warm; it cannot make a claim
+ * about this company's work.
+ */
+async function chat(question) {
+  const prompt = `You are the assistant built into an operations tool for an air-conditioner
+service company in Malaysia. The user has said something conversational rather than asking
+about work.
+
+Reply in one or two short, warm sentences, the way a helpful colleague would.
+
+You have no data in front of you. Never state a number, a name, an order, a date or any fact
+about this company's jobs, staff, customers or money — you do not know them. If the user seems
+to want operational facts, say you can tell them about completed jobs: how many, by whom, and
+how the workload is spread across the team.
+
+Refer to people by name only; never use he/she/his/her.
+
+The user said: "${question}"`
+
+  return callGemini(prompt)
 }
 /**
  * Subjects it plainly does *not* model. "How many customers do we have?"
@@ -373,7 +375,7 @@ Be direct: two sentences at most, then list order numbers on their own lines if 
 Question: "${question}"
 Facts: ${JSON.stringify(facts)}`
 
-  return gemini(prompt)
+  return callGemini(prompt)
 }
 
 /* ------------------------------------------------------------------ */
@@ -388,10 +390,27 @@ export default async function handler(req, res) {
   if (question.length > 300) return res.status(400).json({ error: 'Question is too long.' })
 
   try {
-    // Answered without a model call or a query — see SMALL_TALK.
-    const chat = smallTalk(question)
-    if (chat) {
-      return res.status(200).json({ intent: 'small_talk', answer: chat, routedBy: 'small talk' })
+    const q = question.toLowerCase()
+
+    /**
+     * Anything that is plainly not a data question is conversation: the model
+     * answers it in its own words, and the canned lines stand in when the model
+     * is unavailable. A question about a subject this system does not model
+     * (customers, branches, revenue) is *not* conversation — it gets the
+     * refusal below, because guessing at it would be worse than declining.
+     */
+    if (!ON_TOPIC.test(q) && !OFF_SCOPE.test(q)) {
+      let answer
+      let phrasedBy = 'model'
+      try {
+        answer = await chat(question)
+      } catch {
+        answer =
+          smallTalk(question) ??
+          'I can tell you about completed jobs — how many, by whom, and how the workload is spread. Try "How many jobs were completed today?"'
+        phrasedBy = 'computed'
+      }
+      return res.status(200).json({ intent: 'small_talk', answer, phrasedBy, routedBy: 'chat' })
     }
 
     const names = await roster()

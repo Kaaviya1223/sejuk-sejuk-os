@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { callGemini } from '../src/lib/gemini.js'
 
 /**
  * Advanced AI challenge — Workflow Supervisor.
@@ -13,8 +14,6 @@ import { createClient } from '@supabase/supabase-js'
  * template fallback so an exhausted quota costs the prose and nothing else.
  */
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash'
-const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
 
@@ -89,32 +88,15 @@ async function evidenceCounts(db, ids) {
 }
 
 async function digest(flagged, total) {
-  if (!GEMINI_KEY) throw new Error('no-key')
-
   const prompt = `You are an operations supervisor for an air-conditioner service company.
 Below is a list of completed jobs that automated checks flagged, with the reason for each.
 Write ONE sentence for a manager: what needs attention first and why.
 Use only what is in the JSON. Never invent an order, a name or a number.
-Refer to people by name only — never he/she/his/her.
+Refer to people by name only — never use he/she/his/her.
 
 Flagged (${flagged.length} of ${total} completed jobs checked): ${JSON.stringify(flagged)}`
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.2 },
-      }),
-    },
-  )
-  if (!res.ok) throw new Error(`gemini-${res.status}`)
-  const data = await res.json()
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-  if (!text) throw new Error('gemini-empty')
-  return text.trim()
+  return callGemini(prompt)
 }
 
 /** The summary a manager gets when the model is unavailable. */
