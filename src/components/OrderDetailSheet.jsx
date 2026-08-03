@@ -17,6 +17,36 @@ import {
 } from '../lib/orders.js'
 
 /**
+ * The audit table stores machine keys — `order.status_changed` — because that
+ * is what a log should be greppable by. The trail is read by staff, so it says
+ * what happened instead.
+ */
+const ACTION_LABELS = {
+  'order.created': 'Order created',
+  'order.assigned': 'Technician assigned',
+  'order.status_changed': 'Status changed',
+  'order.rescheduled': 'Postponed',
+  'job.completed': 'Job completed',
+}
+
+function actionLabel(action) {
+  if (ACTION_LABELS[action]) return ACTION_LABELS[action]
+  // An unknown key still reads as a sentence rather than as a database column.
+  const words = String(action ?? '').replace(/[._]/g, ' ').trim()
+  return words ? words[0].toUpperCase() + words.slice(1) : 'Action'
+}
+
+/**
+ * The mock identities are already written as "Nurul (Admin)", so appending the
+ * role produced "Nurul (Admin) (Admin)". Only add it when it is missing.
+ */
+function actorLabel({ actor_name: name, actor_role: role }) {
+  if (!name) return role || 'Unknown'
+  if (!role || name.toLowerCase().includes(role.toLowerCase())) return name
+  return `${name} (${role})`
+}
+
+/**
  * The full record for one order: details, evidence, AI flags, WhatsApp history
  * and the audit trail, plus whichever workflow actions the current role is
  * allowed to take.
@@ -305,7 +335,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                 </div>
                 <div className="pb-1">
                   <p className="text-sm text-ink">
-                    <span className="font-medium">{entry.action}</span>
+                    <span className="font-medium">{actionLabel(entry.action)}</span>
                     {entry.from_status && entry.to_status && (
                       <span className="text-slate">
                         {' '}
@@ -314,7 +344,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                     )}
                   </p>
                   <p className="text-[11px] text-slate">
-                    {entry.actor_name} ({entry.actor_role}) · {dateTime(entry.created_at)}
+                    {actorLabel(entry)} · {dateTime(entry.created_at)}
                   </p>
                 </div>
               </li>
