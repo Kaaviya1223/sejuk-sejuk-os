@@ -225,7 +225,7 @@ function Performance() {
                     </span>
                     <span
                       className={`text-right text-sm tabular-nums ${
-                        row.postponed ? 'text-amber-700' : 'text-slate-light'
+                        row.postponed ? 'text-amber-700 dark:text-amber-300' : 'text-slate-light'
                       }`}
                     >
                       {row.postponed}

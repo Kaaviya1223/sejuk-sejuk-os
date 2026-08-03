@@ -289,7 +289,9 @@ function Tag({ children, tone = 'neutral' }) {
   return (
     <span
       className={`rounded-full px-2 py-0.5 ${
-        tone === 'warn' ? 'bg-amber-50 text-amber-700 dark:text-amber-300' : 'bg-frost-deep text-slate'
+        tone === 'warn'
+          ? 'bg-amber-50 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300'
+          : 'bg-frost-deep text-slate'
       }`}
     >
       {children}

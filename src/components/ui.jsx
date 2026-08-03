@@ -424,9 +424,9 @@ export function Pill({ children, tone = 'neutral' }) {
   const tones = {
     neutral: 'bg-frost-deep text-slate',
     accent: 'bg-coolant-50 text-coolant-700',
-    warning: 'bg-amber-50 text-amber-700',
-    danger: 'bg-red-50 text-red-700',
-    success: 'bg-emerald-50 text-emerald-700',
+    warning: 'bg-amber-50 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
+    danger: 'bg-red-50 text-red-700 dark:bg-red-400/15 dark:text-red-300',
+    success: 'bg-emerald-50 text-emerald-700 dark:bg-success/20 dark:text-[#7FD79A]',
   }
   return (
     <span
