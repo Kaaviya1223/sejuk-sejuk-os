@@ -97,6 +97,11 @@ believing the caller, so a client cannot fire "your job is complete" at a
 customer whose job is still open. It refuses with a 409 that names the actual
 status.
 
+The top bar carries the feed of everything generated, with a count of what has
+not gone out yet. "Unread" means *undispatched*: delivery is a human tapping a
+`wa.me` link, so the app stamps `sent_at` at the moment someone opens it — the
+only point at which it can honestly claim a message was sent.
+
 It renders from the same template module the UI previews from, records each
 message to `notifications`, and returns the deep links. A second call for the
 same order returns what was already sent instead of notifying twice; `force`

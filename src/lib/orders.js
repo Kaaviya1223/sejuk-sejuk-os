@@ -87,6 +87,28 @@ export async function listNotifications({ orderId, limit = 50 } = {}) {
   return data ?? []
 }
 
+/**
+ * Stamps a notification as dispatched.
+ *
+ * Delivery is a human tapping a `wa.me` link, so "sent" is the moment someone
+ * opens that link — this is the only place the app can honestly record it.
+ * Best-effort: failing to log the stamp must never block the send itself.
+ */
+export async function markNotificationSent(id) {
+  if (!id) return null
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .update({ sent_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()
+    return error ? null : data
+  } catch {
+    return null
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Audit trail                                                         */
 /* ------------------------------------------------------------------ */

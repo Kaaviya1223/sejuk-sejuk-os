@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
-  Bell,
-  CalendarDays,
   ClipboardList,
   LayoutDashboard,
-  LifeBuoy,
   Menu,
   Power,
   Snowflake,
@@ -16,6 +13,7 @@ import {
 
 import { SessionProvider } from './context/SessionContext.jsx'
 import { useSession } from './context/session.js'
+import NotificationBell from './components/NotificationBell.jsx'
 import RoleSwitcher from './components/RoleSwitcher.jsx'
 import SchemaBanner from './components/SchemaBanner.jsx'
 import { dateOnly } from './lib/format.js'
@@ -142,10 +140,10 @@ function Shell() {
           <Menu size={20} />
         </button>
 
-        <div className="ml-auto flex items-center gap-1">
-          <TopIcon icon={LifeBuoy} label="Support" />
-          <TopIcon icon={CalendarDays} label="Schedule" />
-          <TopIcon icon={Bell} label="Notifications" dot />
+        {/* One control, and it does what it says. The Support and Schedule
+            icons that used to sit here were decoration with no handler. */}
+        <div className="ml-auto">
+          <NotificationBell />
         </div>
 
         <div className="ml-1 hidden sm:block">
@@ -270,21 +268,6 @@ function SidebarBody({ items, view, onSelect, onReset, name }) {
         <RoleSwitcher />
       </div>
     </div>
-  )
-}
-
-function TopIcon({ icon: Icon, label, dot = false }) {
-  return (
-    <button
-      className="relative rounded-lg p-2 text-slate transition hover:bg-frost hover:text-marine"
-      aria-label={label}
-      title={label}
-    >
-      <Icon size={18} />
-      {dot && (
-        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-copper" />
-      )}
-    </button>
   )
 }
 

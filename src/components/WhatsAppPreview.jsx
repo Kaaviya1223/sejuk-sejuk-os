@@ -2,6 +2,7 @@ import { AlertTriangle, ExternalLink, MessageCircle } from 'lucide-react'
 import { Button } from './ui.jsx'
 import { TEMPLATES } from '../lib/whatsapp.js'
 import { displayPhone } from '../lib/format.js'
+import { markNotificationSent } from '../lib/orders.js'
 
 /**
  * Renders one generated notification: who it goes to, the exact message text,
@@ -53,7 +54,16 @@ function WhatsAppPreview({ notification, compact = false, step }) {
           )}
         </div>
 
-        <a href={notification.deep_link} target="_blank" rel="noreferrer" className="shrink-0">
+        {/* Opening the link is the only moment this app can call a message
+            "sent", so stamp it here too — otherwise the bell keeps counting
+            work that has already been done. */}
+        <a
+          href={notification.deep_link}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => markNotificationSent(notification.id)}
+          className="shrink-0"
+        >
           <Button variant="whatsapp" size="sm">
             <ExternalLink size={13} />
             Send
