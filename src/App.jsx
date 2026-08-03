@@ -151,6 +151,9 @@ function Shell() {
           {session.role === 'Manager' && (
             <button
               onClick={() => setAssistantOpen(true)}
+              /* The word is hidden on small screens, so the button needs a
+                 name of its own — otherwise it is unlabelled on a phone. */
+              aria-label="Ask the operations assistant"
               className="flex items-center gap-1.5 rounded-lg border border-slate-line px-2.5 py-1.5 text-xs font-medium text-brand transition hover:bg-frost"
             >
               <Sparkles size={14} />

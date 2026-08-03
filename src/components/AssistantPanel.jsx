@@ -61,7 +61,26 @@ function AssistantPanel({ open, onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: q }),
       })
-      const result = await res.json()
+
+      /* Read as text first. A host that has no serverless runtime answers this
+         with an empty 404 body, and `res.json()` would surface that as
+         "Unexpected end of JSON input" — a parser error where the real problem
+         is that the endpoint isn't there. */
+      const raw = await res.text()
+      let result = null
+      try {
+        result = raw ? JSON.parse(raw) : null
+      } catch {
+        result = null
+      }
+
+      if (!result) {
+        throw new Error(
+          res.status === 404
+            ? 'The assistant endpoint is not available here. It runs as a serverless function, so it needs `npm run dev` or a deployment that builds `api/` — a static preview of the built files serves the pages but not the API.'
+            : `The assistant did not return a readable answer (HTTP ${res.status}).`,
+        )
+      }
       if (!res.ok) throw new Error(result.error || 'The assistant could not answer that.')
 
       setThread((prev) => [...prev, { question: q, result }])
