@@ -26,7 +26,12 @@ export const TRANSITIONS = {
     { to: 'Job Done', roles: ['Technician'], self: true, label: 'Complete job' },
     { to: 'Assigned', roles: ['Admin', 'Technician'], self: true, label: 'Postpone / reschedule' },
   ],
-  'Job Done': [{ to: 'Reviewed', roles: ['Manager'], label: 'Mark reviewed' }],
+  'Job Done': [
+    { to: 'Reviewed', roles: ['Manager'], label: 'Mark reviewed' },
+    // Rejecting work is part of reviewing it: the job goes back to the
+    // technician who did it, who can finish and complete it again.
+    { to: 'In Progress', roles: ['Manager'], label: 'Send back to technician' },
+  ],
   Reviewed: [
     { to: 'Closed', roles: ['Manager'], label: 'Close order' },
     { to: 'Job Done', roles: ['Manager'], label: 'Reopen for rework' },

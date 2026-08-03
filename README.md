@@ -195,6 +195,13 @@ allowed to make it and whether the actor must be the assigned technician:
 New → Assigned → In Progress → Job Done → Reviewed → Closed
 ```
 
+Work also moves backwards, because real work does: an admin can unassign or
+postpone, and a manager reviewing a job can send it back to the technician
+(`Job Done → In Progress`) or reopen one already reviewed. Those paths are
+declared beside the forward ones, so a page cannot invent a move the rules do
+not allow — the review queue renders its buttons from `allowedTransitions`
+rather than hardcoding Approve and Reject.
+
 `allowedTransitions(order, role, technicianName)` is the only thing that
 decides which action buttons render, so the UI cannot offer an illegal move.
 The database enforces the same status vocabulary with a `CHECK` constraint.

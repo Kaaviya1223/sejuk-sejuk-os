@@ -11,6 +11,7 @@ import {
 import { Alert, Button, Card, CardHeader, EmptyState, PageHeader, SkeletonRows, Textarea } from '../components/ui.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { useSession } from '../context/session.js'
+import { allowedTransitions } from '../lib/constants.js'
 import { dateTime, fileSize, money, relativeTime } from '../lib/format.js'
 import { listJobFilesForOrders, listOrders, updateStatus } from '../lib/orders.js'
 
@@ -23,8 +24,8 @@ import { listJobFilesForOrders, listOrders, updateStatus } from '../lib/orders.j
  * was charged, what the technician wrote, and the photos they attached. A
  * manager should be able to approve without opening anything.
  */
-function ReviewQueue({ onNavigate }) {
-  const { actor } = useSession()
+function ReviewQueue() {
+  const { session, actor } = useSession()
   const [orders, setOrders] = useState([])
   const [files, setFiles] = useState(new Map())
   const [loading, setLoading] = useState(true)
@@ -92,12 +93,14 @@ function ReviewQueue({ onNavigate }) {
         <div className="mb-4">
           <Alert
             tone="success"
-            title={`${done.order_no} ${done.toStatus === 'Reviewed' ? 'marked reviewed' : 'reopened'}`}
+            title={`${done.order_no} ${
+              done.toStatus === 'Reviewed' ? 'marked reviewed' : 'sent back to the technician'
+            }`}
             onDismiss={() => setDone(null)}
           >
             {done.toStatus === 'Reviewed'
               ? 'It moves on to closing.'
-              : 'It is back with the technician as Job Done.'}
+              : 'It is back on their list as In Progress, to finish and complete again.'}
           </Alert>
         </div>
       )}
@@ -123,9 +126,10 @@ function ReviewQueue({ onNavigate }) {
               busy={busy === order.id}
               note={notes[order.id] ?? ''}
               onNote={(v) => setNotes((prev) => ({ ...prev, [order.id]: v }))}
-              onApprove={() => act(order, 'Reviewed')}
-              onReopen={() => act(order, 'Job Done')}
-              onOpen={() => onNavigate?.('orders')}
+              /* Buttons come from the state machine, so this page cannot
+                 offer a move the rules do not allow. */
+              transitions={allowedTransitions(order, session.role, session.name)}
+              onAct={(toStatus) => act(order, toStatus)}
             />
           ))}
         </div>
@@ -134,7 +138,7 @@ function ReviewQueue({ onNavigate }) {
   )
 }
 
-function ReviewCard({ order, files, busy, note, onNote, onApprove, onReopen }) {
+function ReviewCard({ order, files, busy, note, onNote, transitions, onAct }) {
   const quoted = Number(order.quoted_price || 0)
   const final = Number(order.final_amount || 0)
   const variance = final - quoted
@@ -267,14 +271,19 @@ function ReviewCard({ order, files, busy, note, onNote, onApprove, onReopen }) {
           />
         </div>
         <div className="flex shrink-0 gap-2">
-          <Button variant="outline" onClick={onReopen} disabled={busy}>
-            <RotateCcw size={15} />
-            Reopen
-          </Button>
-          <Button variant="success" loading={busy} onClick={onApprove}>
-            <CheckCircle2 size={16} />
-            Approve
-          </Button>
+          {transitions.map((t) =>
+            t.to === 'Reviewed' ? (
+              <Button key={t.to} variant="success" loading={busy} onClick={() => onAct(t.to)}>
+                <CheckCircle2 size={16} />
+                Approve
+              </Button>
+            ) : (
+              <Button key={t.to} variant="outline" disabled={busy} onClick={() => onAct(t.to)}>
+                <RotateCcw size={15} />
+                Send back
+              </Button>
+            ),
+          )}
         </div>
       </div>
     </Card>
