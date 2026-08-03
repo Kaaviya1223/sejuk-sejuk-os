@@ -99,7 +99,7 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] uppercase tracking-wide text-slate">Final amount</p>
-            <p className="tabular-nums text-lg font-semibold leading-tight text-marine">
+            <p className="tabular-nums text-lg font-semibold leading-tight text-ink">
               {money(finalAmount)}
             </p>
           </div>
@@ -204,11 +204,11 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
         ) : (
           <div className="space-y-3 rounded-xl border border-slate-line bg-frost/60 p-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-marine">Payment received</p>
+              <p className="text-sm font-medium text-ink">Payment received</p>
               <button
                 type="button"
                 onClick={() => setShowPayment(false)}
-                className="text-slate hover:text-marine"
+                className="text-slate hover:text-ink"
               >
                 <X size={15} />
               </button>
@@ -238,7 +238,7 @@ function JobCompletionSheet({ order, open, onClose, onCompleted }) {
 
             <div>
               <div className="mb-1.5 flex items-baseline justify-between">
-                <span className="text-sm font-medium text-marine">Receipt photo</span>
+                <span className="text-sm font-medium text-ink">Receipt photo</span>
                 <span className="text-xs text-slate-light">
                   {receiptFiles.length}/{MAX_JOB_FILES}
                 </span>
@@ -282,7 +282,7 @@ function Step({ icon: Icon, title, hint, children }) {
     <section className="space-y-3">
       <div className="flex items-center gap-2 border-b border-slate-line pb-1.5">
         <Icon size={14} className="shrink-0 text-coolant" />
-        <h3 className="flex-1 font-display text-xs font-semibold uppercase tracking-wide text-marine-600">
+        <h3 className="flex-1 font-display text-xs font-semibold uppercase tracking-wide text-brand">
           {title}
         </h3>
         {hint && <span className="text-[11px] tabular-nums text-slate-light">{hint}</span>}
@@ -296,7 +296,7 @@ function ReadOnly({ label, value, numeric = false }) {
   return (
     <div>
       <p className="text-[11px] uppercase tracking-wide text-slate-light">{label}</p>
-      <p className={`text-sm text-marine ${numeric ? 'tabular-nums' : ''}`}>{value || '—'}</p>
+      <p className={`text-sm text-ink ${numeric ? 'tabular-nums' : ''}`}>{value || '—'}</p>
     </div>
   )
 }

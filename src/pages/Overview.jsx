@@ -168,7 +168,7 @@ function Overview({ onNavigate, today }) {
             actions={
               <button
                 onClick={() => onNavigate?.('orders')}
-                className="rounded-lg border border-slate-line px-2.5 py-1 text-xs font-medium text-marine-600 transition hover:bg-frost"
+                className="rounded-lg border border-slate-line px-2.5 py-1 text-xs font-medium text-brand transition hover:bg-frost"
               >
                 View all
               </button>

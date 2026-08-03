@@ -86,9 +86,9 @@ function TechnicianPortal() {
 
   return (
     <>
-      <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-slate-line bg-white px-4 py-3 shadow-card">
+      <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-slate-line bg-surface px-4 py-3 shadow-card">
         <div>
-          <h1 className="font-display text-lg font-semibold leading-tight text-marine">
+          <h1 className="font-display text-lg font-semibold leading-tight text-ink">
             Hi {session.name}
           </h1>
           <p className="text-xs text-slate">
@@ -99,7 +99,7 @@ function TechnicianPortal() {
         </div>
         <div className="flex gap-2 text-center">
           <span className="rounded-lg bg-marine-100 px-3 py-1.5">
-            <span className="block text-lg font-semibold leading-none text-marine-600">
+            <span className="block text-lg font-semibold leading-none text-brand">
               {active.length}
             </span>
             <span className="text-[10px] text-slate">to do</span>
@@ -172,7 +172,7 @@ function TechnicianPortal() {
       ) : (
         <div className="space-y-5">
           <section>
-            <h2 className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-marine-600">
+            <h2 className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-brand">
               To do ({active.length})
             </h2>
             {active.length === 0 ? (
@@ -210,7 +210,7 @@ function TechnicianPortal() {
                   <div key={order.id} className="flex items-center gap-3 px-4 py-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="tabular-nums text-sm text-marine">{order.order_no}</span>
+                        <span className="tabular-nums text-sm text-ink">{order.order_no}</span>
                         <StatusBadge status={order.status} size="sm" />
                       </div>
                       <p className="mt-0.5 truncate text-xs text-slate">
@@ -256,7 +256,7 @@ function TechnicianPortal() {
         }
       >
         <p className="mb-3 text-sm text-slate">
-          The job goes back to <span className="font-medium text-marine">Assigned</span> and the
+          The job goes back to <span className="font-medium text-ink">Assigned</span> and the
           postpone count increases — managers track this on the KPI dashboard.
         </p>
         <Textarea
@@ -279,7 +279,7 @@ function JobCard({ order, busy, onStart, onComplete, onPostpone }) {
   const started = order.status === 'In Progress'
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-line bg-white shadow-tile transition duration-200 hover:shadow-lift">
+    <div className="overflow-hidden rounded-2xl border border-slate-line bg-surface shadow-tile transition duration-200 hover:shadow-lift">
       {/* Ticket header, in the brand gradient so the card reads at arm's length. */}
       <div className="relative flex items-center justify-between gap-3 overflow-hidden bg-brand-sweep px-4 py-3">
         <span aria-hidden className="pointer-events-none absolute inset-0 bg-brand-glow" />
@@ -301,7 +301,7 @@ function JobCard({ order, busy, onStart, onComplete, onPostpone }) {
       </div>
 
       <div className="px-4 pb-4 pt-3">
-        <p className="font-display text-lg font-semibold leading-tight text-marine">
+        <p className="font-display text-lg font-semibold leading-tight text-ink">
           {order.customer_name}
         </p>
 
@@ -316,7 +316,7 @@ function JobCard({ order, busy, onStart, onComplete, onPostpone }) {
 
         {order.problem_description && (
           <Block title="Job description">
-            <p className="py-1 text-sm text-marine">{order.problem_description}</p>
+            <p className="py-1 text-sm text-ink">{order.problem_description}</p>
           </Block>
         )}
 
@@ -347,7 +347,7 @@ function JobCard({ order, busy, onStart, onComplete, onPostpone }) {
 
         {order.admin_notes && (
           <p className="mt-3 rounded-lg border-l-[3px] border-coolant bg-coolant-50 px-3 py-2 text-xs text-slate">
-            <span className="font-medium text-marine">Office note:</span> {order.admin_notes}
+            <span className="font-medium text-ink">Office note:</span> {order.admin_notes}
           </p>
         )}
 
@@ -376,7 +376,7 @@ function JobCard({ order, busy, onStart, onComplete, onPostpone }) {
 function Block({ title, children }) {
   return (
     <div className="mt-3 border-t border-slate-line pt-2.5 first:border-0">
-      <p className="mb-1 font-display text-xs font-semibold uppercase tracking-wide text-marine-600">
+      <p className="mb-1 font-display text-xs font-semibold uppercase tracking-wide text-brand">
         {title}
       </p>
       {children}

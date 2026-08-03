@@ -51,7 +51,7 @@ function NotificationBell() {
           setOpen((v) => !v)
           if (!open) load()
         }}
-        className="relative rounded-lg p-2 text-slate transition hover:bg-frost hover:text-marine"
+        className="relative rounded-lg p-2 text-slate transition hover:bg-frost hover:text-ink"
         aria-label={pending ? `Notifications, ${pending} not yet sent` : 'Notifications'}
         title="Notifications"
       >
@@ -70,9 +70,9 @@ function NotificationBell() {
             onClick={() => setOpen(false)}
             aria-label="Close notifications"
           />
-          <div className="absolute right-0 top-full z-20 mt-2 w-[21rem] overflow-hidden rounded-xl border border-slate-line bg-white shadow-lift">
+          <div className="absolute right-0 top-full z-20 mt-2 w-[21rem] overflow-hidden rounded-xl border border-slate-line bg-surface shadow-lift">
             <div className="flex items-baseline justify-between border-b border-slate-line bg-frost/60 px-4 py-2.5">
-              <p className="font-display text-sm font-semibold text-marine-600">Notifications</p>
+              <p className="font-display text-sm font-semibold text-brand">Notifications</p>
               <p className="text-[11px] text-slate">
                 {pending ? `${pending} not sent yet` : 'all sent'}
               </p>
@@ -84,7 +84,7 @@ function NotificationBell() {
               ) : items.length === 0 ? (
                 <div className="px-4 py-8 text-center">
                   <MessageCircle size={20} className="mx-auto mb-2 text-slate-light" />
-                  <p className="text-sm font-medium text-marine">Nothing generated yet</p>
+                  <p className="text-sm font-medium text-ink">Nothing generated yet</p>
                   <p className="mt-0.5 text-xs text-slate">
                     Messages appear here when an order is assigned or a job is completed.
                   </p>
@@ -103,7 +103,7 @@ function NotificationBell() {
                         aria-hidden
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-marine">
+                        <p className="truncate text-sm font-medium text-ink">
                           {n.recipient_name}
                           <span className="ml-1.5 text-[11px] font-normal text-slate">
                             {n.recipient_role}
@@ -124,7 +124,7 @@ function NotificationBell() {
                           target="_blank"
                           rel="noreferrer"
                           onClick={() => send(n)}
-                          className="mt-0.5 flex h-7 shrink-0 items-center gap-1 self-start rounded-lg border border-slate-line px-2 text-[11px] font-medium text-marine-600 transition hover:bg-frost"
+                          className="mt-0.5 flex h-7 shrink-0 items-center gap-1 self-start rounded-lg border border-slate-line px-2 text-[11px] font-medium text-brand transition hover:bg-frost"
                         >
                           <ExternalLink size={11} />
                           {n.sent_at ? 'Resend' : 'Send'}

@@ -3,12 +3,64 @@
 @tailwind utilities;
 
 @layer base {
+  /**
+   * The two themes. Dark is *selected*, not an inversion: the surfaces are
+   * cool navy rather than grey so they sit under the same brand gradient, and
+   * the ink steps were picked against that surface.
+   */
+  :root {
+    --surface: 255 255 255;
+    --canvas: 241 245 249;
+    --subtle: 227 234 243;
+    --ink: 23 63 107;
+    --muted: 90 107 128;
+    --faint: 138 153 172;
+    --line: 221 228 237;
+    --brand: 30 85 145;
+    --chip: 232 240 250;
+    --accent-soft: 231 245 242;
+    --success-soft: 236 250 240;
+
+    --sheen-a: 255 255 255;
+    --sheen-b: 251 252 254;
+    --sheen-c: 245 248 252;
+    --sweep: 250 252 254;
+  }
+
+  .dark {
+    --surface: 19 32 47;
+    --canvas: 11 22 34;
+    --subtle: 28 44 63;
+    --ink: 226 234 243;
+    --muted: 154 170 189;
+    --faint: 121 138 158;
+    --line: 39 56 76;
+    --brand: 125 176 226;
+    --chip: 26 47 71;
+    --accent-soft: 13 51 49;
+    --success-soft: 15 45 28;
+
+    --sheen-a: 22 36 53;
+    --sheen-b: 20 33 49;
+    --sheen-c: 18 30 45;
+    --sweep: 46 66 90;
+  }
+
+  /* Shadows are near-invisible on a dark canvas; a hairline does the lifting. */
+  .dark .shadow-card,
+  .dark .shadow-tile,
+  .dark .shadow-lift {
+    --tw-shadow-color: rgb(0 0 0 / 0.5);
+  }
+}
+
+@layer base {
   html {
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-frost text-marine font-body antialiased;
+    @apply bg-frost text-ink font-body antialiased;
   }
 
   /* Inputs on iOS zoom the viewport below 16px; the technician portal is
@@ -62,7 +114,7 @@
     background-image: linear-gradient(
       90deg,
       theme('colors.frost.deep') 0%,
-      rgba(255, 255, 255, 0.75) 50%,
+      rgb(var(--sweep)) 50%,
       theme('colors.frost.deep') 100%
     );
     background-size: 200% 100%;

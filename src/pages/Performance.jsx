@@ -5,7 +5,8 @@ import { Alert, Card, CardHeader, PageHeader, SkeletonRows, Stat } from '../comp
 import { useSession } from '../context/session.js'
 import { money, shortMoney } from '../lib/format.js'
 import { listOrders } from '../lib/orders.js'
-import { SEQUENTIAL } from '../lib/palette.js'
+import { sequential } from '../lib/palette.js'
+import { useTheme } from '../context/theme.js'
 import { COMPLETED_STATUSES } from '../lib/constants.js'
 
 /**
@@ -59,6 +60,7 @@ function within({ from, to }, date) {
 
 function Performance() {
   const { technicians } = useSession()
+  const { theme } = useTheme()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -123,7 +125,7 @@ function Performance() {
                 key={p.key}
                 onClick={() => setPeriod(p.key)}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                  period === p.key ? 'bg-white text-marine-600' : 'text-white/80 hover:text-white'
+                  period === p.key ? 'bg-surface text-brand' : 'text-white/80 hover:text-white'
                 }`}
               >
                 {p.label}
@@ -201,7 +203,7 @@ function Performance() {
                   >
                     <span className="text-sm tabular-nums text-slate-light">{i + 1}</span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-marine">{row.name}</p>
+                      <p className="truncate text-sm font-medium text-ink">{row.name}</p>
                       {row.branch && <p className="truncate text-xs text-slate">{row.branch}</p>}
                     </div>
                     <div className="flex items-center gap-3">
@@ -210,15 +212,15 @@ function Performance() {
                           className="h-full rounded-r"
                           style={{
                             width: `${Math.max((row.jobs / max) * 100, row.jobs ? 2 : 0)}%`,
-                            backgroundColor: SEQUENTIAL,
+                            backgroundColor: sequential(theme),
                           }}
                         />
                       </span>
-                      <span className="w-6 shrink-0 text-right text-sm tabular-nums text-marine">
+                      <span className="w-6 shrink-0 text-right text-sm tabular-nums text-ink">
                         {row.jobs}
                       </span>
                     </div>
-                    <span className="text-right text-sm tabular-nums text-marine">
+                    <span className="text-right text-sm tabular-nums text-ink">
                       {money(row.total)}
                     </span>
                     <span
@@ -238,11 +240,11 @@ function Performance() {
               {board.rows.map((row, i) => (
                 <div key={row.name} className="px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-marine">
+                    <p className="text-sm font-medium text-ink">
                       <span className="mr-2 tabular-nums text-slate-light">{i + 1}</span>
                       {row.name}
                     </p>
-                    <p className="text-sm tabular-nums text-marine">{money(row.total)}</p>
+                    <p className="text-sm tabular-nums text-ink">{money(row.total)}</p>
                   </div>
                   <p className="mt-0.5 text-xs text-slate">
                     {row.jobs} completed · {row.postponed} postponed

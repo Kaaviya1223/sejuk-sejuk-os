@@ -188,6 +188,20 @@ technician role renders an entirely different chrome. The brief says admin
 staff are on desktops and technicians are on phones, so they get genuinely
 different navigation rather than one layout squeezed down.
 
+**Light and dark are one set of class names.** The semantic tokens — surface,
+canvas, ink, muted, hairline, and the tint steps — are CSS variables consumed
+through Tailwind (`rgb(var(--surface) / <alpha-value>)`), so `bg-surface` and
+`text-ink` resolve per theme and opacity modifiers still work. Around 320 usages
+across 16 files therefore flip without a single `dark:` variant; the handful of
+fixed tints that a variable can't reach (status chips, alert tones) carry
+explicit dark steps.
+
+The dark palette is **selected, not inverted**. Surfaces are cool navy so they
+sit under the same brand gradient, ink was picked against that surface, and the
+six status hues use their own dark steps — flipping a categorical palette by
+lightness is what makes dark-mode charts muddy. The theme follows the OS until
+someone chooses, after which their choice sticks.
+
 **Blue leads, teal supports, green is spent only on "finished".** An earlier
 pass used green as the brand accent, which put it on the sidebar, the icon
 chips and the card rules — and also on the Complete job button and the Closed

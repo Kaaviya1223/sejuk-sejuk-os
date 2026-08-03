@@ -49,7 +49,7 @@ export function PageHeader({ title, subtitle, actions, deep = false }) {
 export function Card({ children, className = '', padded = true }) {
   return (
     <div
-      className={`overflow-hidden rounded-2xl border border-slate-line bg-white shadow-tile transition duration-200 hover:shadow-lift ${
+      className={`overflow-hidden rounded-2xl border border-slate-line bg-surface shadow-tile transition duration-200 hover:shadow-lift ${
         padded ? 'p-5' : ''
       } ${className}`}
     >
@@ -75,7 +75,7 @@ export function CardHeader({ title, subtitle, actions, divided = true }) {
           aria-hidden
           className="mb-2 block h-1 w-8 rounded-full bg-gradient-to-r from-coolant to-marine-500"
         />
-        <h2 className="font-display text-base font-semibold tracking-tight text-marine-600">
+        <h2 className="font-display text-base font-semibold tracking-tight text-brand">
           {title}
         </h2>
         {subtitle && <p className="mt-0.5 text-xs text-slate">{subtitle}</p>}
@@ -94,13 +94,13 @@ const BUTTON_VARIANTS = {
   accent: 'bg-coolant text-white hover:bg-coolant-600 disabled:bg-coolant/40',
   // Green appears on exactly one kind of button: the one that finishes a job.
   success: 'bg-success text-white hover:bg-success-600 disabled:bg-success/40',
-  outline: 'border border-slate-line bg-white text-marine hover:bg-frost disabled:text-slate-light',
-  ghost: 'text-slate hover:bg-frost-deep hover:text-marine',
+  outline: 'border border-slate-line bg-surface text-ink hover:bg-frost disabled:text-slate-light',
+  ghost: 'text-slate hover:bg-frost-deep hover:text-ink',
   danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300',
   whatsapp: 'bg-[#25D366] text-[#0B3B23] hover:brightness-95',
   // For use on the brand band, where a filled navy button would sink into it.
   band: 'bg-white/15 text-white ring-1 ring-inset ring-white/30 hover:bg-white/25',
-  bandSolid: 'bg-white text-marine-600 hover:bg-frost disabled:text-slate-light',
+  bandSolid: 'bg-surface text-brand hover:bg-frost disabled:text-slate-light',
 }
 
 export function Button({
@@ -135,7 +135,7 @@ export function Field({ label, hint, error, required, children, className = '' }
   return (
     <label className={`block ${className}`}>
       <span className="mb-1.5 flex items-baseline justify-between gap-2">
-        <span className="text-sm font-medium text-marine">
+        <span className="text-sm font-medium text-ink">
           {label}
           {required && <span className="ml-0.5 text-copper">*</span>}
         </span>
@@ -148,7 +148,7 @@ export function Field({ label, hint, error, required, children, className = '' }
 }
 
 const CONTROL =
-  'w-full rounded-lg border border-slate-line bg-white px-3 py-2 text-marine placeholder:text-slate-light transition focus:border-coolant focus:outline-none focus:ring-2 focus:ring-coolant/25 disabled:bg-frost disabled:text-slate'
+  'w-full rounded-lg border border-slate-line bg-surface px-3 py-2 text-ink placeholder:text-slate-light transition focus:border-coolant focus:outline-none focus:ring-2 focus:ring-coolant/25 disabled:bg-frost disabled:text-slate'
 
 export function Input({ className = '', ...props }) {
   return <input {...props} className={`${CONTROL} ${className}`} />
@@ -215,21 +215,36 @@ export function EmptyState({ icon: Icon = Info, title, children }) {
           aria-hidden
           className="absolute inset-0 rounded-full bg-gradient-to-br from-coolant/25 to-marine-500/20 blur-md"
         />
-        <span className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white bg-gradient-to-br from-white to-frost-deep text-coolant shadow-tile">
+        <span className="relative flex h-12 w-12 items-center justify-center rounded-full border border-slate-line bg-gradient-to-br from-surface to-frost-deep text-coolant shadow-tile">
           <Icon size={21} />
         </span>
       </span>
-      <p className="text-sm font-medium text-marine">{title}</p>
+      <p className="text-sm font-medium text-ink">{title}</p>
       {children && <p className="mx-auto mt-1 max-w-sm text-sm text-slate">{children}</p>}
     </div>
   )
 }
 
 const ALERT_STYLES = {
-  info: { wrap: 'border-coolant-200 bg-coolant-50 text-marine', icon: Info },
-  success: { wrap: 'border-emerald-200 bg-emerald-50 text-emerald-900', icon: Check },
-  warning: { wrap: 'border-amber-200 bg-amber-50 text-amber-900', icon: AlertTriangle },
-  error: { wrap: 'border-red-200 bg-red-50 text-red-800', icon: AlertTriangle },
+  info: {
+    wrap: 'border-coolant-200 bg-coolant-50 text-ink dark:border-coolant/40',
+    icon: Info,
+  },
+  success: {
+    wrap:
+      'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-success/40 dark:bg-success/15 dark:text-[#9BE3B0]',
+    icon: Check,
+  },
+  warning: {
+    wrap:
+      'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-400/40 dark:bg-amber-400/15 dark:text-amber-200',
+    icon: AlertTriangle,
+  },
+  error: {
+    wrap:
+      'border-red-200 bg-red-50 text-red-800 dark:border-red-400/40 dark:bg-red-400/15 dark:text-red-200',
+    icon: AlertTriangle,
+  },
 }
 
 export function Alert({ tone = 'info', title, children, onDismiss }) {
@@ -275,13 +290,13 @@ export function Sheet({ open, onClose, title, subtitle, children, footer, wide =
   return (
     <div className="animate-fade fixed inset-0 z-50 flex items-end justify-center bg-marine/40 backdrop-blur-[2px] sm:items-center sm:p-6">
       <div
-        className={`animate-rise flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-sheet sm:rounded-2xl ${
+        className={`animate-rise flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-sheet sm:rounded-2xl ${
           wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'
         }`}
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-line px-5 py-4">
           <div>
-            <h2 className="font-display text-base font-semibold text-marine">{title}</h2>
+            <h2 className="font-display text-base font-semibold text-ink">{title}</h2>
             {subtitle && <p className="mt-0.5 text-xs text-slate">{subtitle}</p>}
           </div>
           <button onClick={onClose} className="rounded-lg p-1 text-slate hover:bg-frost">
@@ -352,7 +367,7 @@ export function Stat({ label, value, sub, icon: Icon, loading = false, tone = 'a
         <Skeleton className="h-7 w-14 rounded" />
       ) : (
         <p
-          className={`whitespace-nowrap font-semibold leading-none tracking-tight text-marine ${
+          className={`whitespace-nowrap font-semibold leading-none tracking-tight text-ink ${
             String(value).length > 5 ? 'text-xl' : 'text-[28px]'
           }`}
         >
@@ -375,7 +390,7 @@ export function Section({ title, icon: Icon, children, defaultOpen = true, meta 
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-line bg-white shadow-card">
+    <div className="overflow-hidden rounded-xl border border-slate-line bg-surface shadow-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -383,7 +398,7 @@ export function Section({ title, icon: Icon, children, defaultOpen = true, meta 
         aria-expanded={open}
       >
         {Icon && <Icon size={15} className="shrink-0 text-coolant" />}
-        <span className="flex-1 font-display text-sm font-semibold text-marine-600">{title}</span>
+        <span className="flex-1 font-display text-sm font-semibold text-brand">{title}</span>
         {meta && <span className="text-[11px] text-slate">{meta}</span>}
         <ChevronDown
           size={17}
@@ -400,7 +415,7 @@ export function Row({ label, children, className = '' }) {
   return (
     <div className={`flex items-baseline justify-between gap-4 py-1.5 ${className}`}>
       <span className="shrink-0 text-xs text-slate">{label}</span>
-      <span className="min-w-0 text-right text-sm text-marine">{children}</span>
+      <span className="min-w-0 text-right text-sm text-ink">{children}</span>
     </div>
   )
 }

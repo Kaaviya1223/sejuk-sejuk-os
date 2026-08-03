@@ -33,14 +33,14 @@ function RoleSwitcher({ compact = false, variant = 'panel' }) {
       >
         <span
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-            onBar ? 'bg-marine-100 text-marine' : 'bg-white/20 text-white'
+            onBar ? 'bg-marine-100 text-ink' : 'bg-white/20 text-white'
           }`}
         >
           {initials(session.name)}
         </span>
         <span className="min-w-0 flex-1">
           <span
-            className={`block truncate text-sm font-medium ${onBar ? 'text-marine' : 'text-white'}`}
+            className={`block truncate text-sm font-medium ${onBar ? 'text-ink' : 'text-white'}`}
           >
             {session.name}
           </span>
@@ -72,7 +72,7 @@ function RoleSwitcher({ compact = false, variant = 'panel' }) {
             aria-label="Close role menu"
           />
           <div
-            className={`absolute z-20 w-full min-w-[240px] overflow-hidden rounded-xl border border-slate-line bg-white shadow-lift ${
+            className={`absolute z-20 w-full min-w-[240px] overflow-hidden rounded-xl border border-slate-line bg-surface shadow-lift ${
               onBar || compact ? 'right-0 top-full mt-2' : 'bottom-full left-0 mb-2'
             }`}
           >
@@ -95,7 +95,7 @@ function RoleSwitcher({ compact = false, variant = 'panel' }) {
                 >
                   <RoleIcon size={15} className="mt-0.5 text-coolant" />
                   <span>
-                    <span className="block text-sm font-medium text-marine">{role}</span>
+                    <span className="block text-sm font-medium text-ink">{role}</span>
                     <span className="block text-[11px] text-slate">{ROLE_META[role].blurb}</span>
                   </span>
                 </button>
@@ -117,7 +117,7 @@ function RoleSwitcher({ compact = false, variant = 'panel' }) {
                 }`}
               >
                 <Wrench size={14} className="text-slate" />
-                <span className="text-sm text-marine">{tech.name}</span>
+                <span className="text-sm text-ink">{tech.name}</span>
                 {tech.branch && <span className="ml-auto text-[11px] text-slate">{tech.branch}</span>}
               </button>
             ))}

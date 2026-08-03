@@ -34,7 +34,7 @@ function OrderList({ orders, loading, onSelect, emptyTitle = 'No orders', emptyB
               className="grid w-full grid-cols-[1.5fr_1fr_1.3fr_0.9fr_0.7fr] items-center gap-4 px-5 py-3.5 text-left transition hover:bg-frost/60"
             >
               <div className="min-w-0">
-                <p className="tabular-nums text-sm text-marine">{order.order_no}</p>
+                <p className="tabular-nums text-sm text-ink">{order.order_no}</p>
                 <p className="truncate text-xs text-slate">
                   {order.customer_name} · {order.service_type}
                 </p>
@@ -43,10 +43,10 @@ function OrderList({ orders, loading, onSelect, emptyTitle = 'No orders', emptyB
                 <StatusBadge status={order.status} size="sm" />
               </span>
               <StatusTrack status={order.status} />
-              <p className="truncate text-xs font-medium text-marine">
+              <p className="truncate text-xs font-medium text-ink">
                 {order.assigned_technician || <span className="text-slate-light">Unassigned</span>}
               </p>
-              <p className="text-right tabular-nums text-xs text-marine">
+              <p className="text-right tabular-nums text-xs text-ink">
                 {money(order.final_amount ?? order.quoted_price)}
               </p>
             </button>
@@ -64,7 +64,7 @@ function OrderList({ orders, loading, onSelect, emptyTitle = 'No orders', emptyB
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="tabular-nums text-sm text-marine">{order.order_no}</span>
+                <span className="tabular-nums text-sm text-ink">{order.order_no}</span>
                 <StatusBadge status={order.status} size="sm" />
               </div>
               <p className="mt-0.5 truncate text-xs text-slate">

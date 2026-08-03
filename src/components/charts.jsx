@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-import { SEQUENTIAL, STATUS_COLORS } from '../lib/palette.js'
+import { meterColors, sequential, statusColors } from '../lib/palette.js'
+import { useTheme } from '../context/theme.js'
 import { STATUSES } from '../lib/constants.js'
 
 /**
@@ -20,6 +21,8 @@ import { STATUSES } from '../lib/constants.js'
  */
 export function StatusMix({ orders, loading = false }) {
   const [hovered, setHovered] = useState(null)
+  const { theme } = useTheme()
+  const COLORS = statusColors(theme)
 
   const counts = STATUSES.map((status) => ({
     status,
@@ -75,7 +78,7 @@ export function StatusMix({ orders, loading = false }) {
                 className={`h-3.5 w-full ${i === 0 ? 'rounded-l' : ''} ${
                   i === present.length - 1 ? 'rounded-r' : ''
                 }`}
-                style={{ backgroundColor: STATUS_COLORS[status] }}
+                style={{ backgroundColor: COLORS[status] }}
               />
             </button>
           ))}
@@ -87,10 +90,10 @@ export function StatusMix({ orders, loading = false }) {
           <li key={status} className="flex items-center gap-2 text-xs">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-sm"
-              style={{ backgroundColor: STATUS_COLORS[status] }}
+              style={{ backgroundColor: COLORS[status] }}
             />
             <span className="min-w-0 flex-1 truncate text-slate">{status}</span>
-            <span className="font-medium tabular-nums text-marine">{count}</span>
+            <span className="font-medium tabular-nums text-ink">{count}</span>
           </li>
         ))}
       </ul>
@@ -107,6 +110,7 @@ export function StatusMix({ orders, loading = false }) {
  * with the value at the tip of each bar.
  */
 export function TechnicianLoad({ orders, technicians, loading = false }) {
+  const { theme } = useTheme()
   if (loading) {
     return (
       <ul className="space-y-3">
@@ -138,13 +142,13 @@ export function TechnicianLoad({ orders, technicians, loading = false }) {
     <ul className="space-y-3">
       {rows.map((row) => (
         <li key={row.name} className="grid grid-cols-[4.5rem_1fr_2rem] items-center gap-3">
-          <span className="truncate text-xs font-medium text-marine">{row.name}</span>
+          <span className="truncate text-xs font-medium text-ink">{row.name}</span>
           <span className="flex h-3.5 items-center" title={`${row.name}: ${row.open} open`}>
             <span
               className="h-full rounded-r"
               style={{
                 width: `${Math.max((row.open / max) * 100, row.open ? 2 : 0)}%`,
-                backgroundColor: SEQUENTIAL,
+                backgroundColor: sequential(theme),
               }}
             />
           </span>
@@ -165,6 +169,8 @@ export function TechnicianLoad({ orders, technicians, loading = false }) {
  * stops.
  */
 export function CompletionMeter({ done, total, caption, loading = false }) {
+  const { theme } = useTheme()
+  const meter = meterColors(theme)
   const ratio = total ? done / total : 0
   const r = 74
   const circumference = 2 * Math.PI * r
@@ -191,8 +197,8 @@ export function CompletionMeter({ done, total, caption, loading = false }) {
             {/* Two steps of the same green — depth without changing the hue
                 the meter encodes. */}
             <linearGradient id="meter-fill" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#54B683" />
-              <stop offset="100%" stopColor="#2A724C" />
+              <stop offset="0%" stopColor={meter.from} />
+              <stop offset="100%" stopColor={meter.to} />
             </linearGradient>
             <filter id="meter-glow" x="-30%" y="-30%" width="160%" height="160%">
               <feGaussianBlur stdDeviation="4" result="blur" />
@@ -203,7 +209,7 @@ export function CompletionMeter({ done, total, caption, loading = false }) {
             </filter>
           </defs>
 
-          <circle cx="90" cy="90" r={r} fill="none" stroke="#D8EDE2" strokeWidth="16" />
+          <circle cx="90" cy="90" r={r} fill="none" stroke={meter.track} strokeWidth="16" />
           <circle
             cx="90"
             cy="90"
@@ -218,7 +224,7 @@ export function CompletionMeter({ done, total, caption, loading = false }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-semibold leading-none text-marine">
+          <span className="text-5xl font-semibold leading-none text-ink">
             {Math.round(ratio * 100)}
             <span className="text-2xl text-slate">%</span>
           </span>
@@ -226,8 +232,8 @@ export function CompletionMeter({ done, total, caption, loading = false }) {
       </div>
 
       <p className="mt-3 text-center text-xs text-slate">
-        <span className="font-semibold text-marine">{done}</span> of{' '}
-        <span className="font-semibold text-marine">{total}</span> {caption}
+        <span className="font-semibold text-ink">{done}</span> of{' '}
+        <span className="font-semibold text-ink">{total}</span> {caption}
       </p>
     </div>
   )

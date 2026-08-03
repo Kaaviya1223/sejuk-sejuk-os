@@ -14,6 +14,7 @@ import {
 import { SessionProvider } from './context/SessionContext.jsx'
 import { useSession } from './context/session.js'
 import NotificationBell from './components/NotificationBell.jsx'
+import ThemeToggle from './components/ThemeToggle.jsx'
 import RoleSwitcher from './components/RoleSwitcher.jsx'
 import SchemaBanner from './components/SchemaBanner.jsx'
 import { dateOnly } from './lib/format.js'
@@ -55,7 +56,7 @@ function Wordmark({ tone = 'dark' }) {
       <span className="leading-tight">
         <span
           className={`block font-display text-sm font-semibold tracking-tight ${
-            dark ? 'text-marine' : 'text-white'
+            dark ? 'text-ink' : 'text-white'
           }`}
         >
           Sejuk Sejuk <span className={dark ? 'text-coolant' : 'text-coolant-200'}>Ops</span>
@@ -105,8 +106,11 @@ function Shell() {
           />
           <div className="relative mx-auto flex max-w-2xl items-center justify-between gap-3">
             <Wordmark tone="light" />
-            <div className="w-44">
-              <RoleSwitcher compact />
+            <div className="flex items-center gap-1">
+              <ThemeToggle onBand />
+              <div className="w-40">
+                <RoleSwitcher compact />
+              </div>
             </div>
           </div>
         </header>
@@ -122,7 +126,7 @@ function Shell() {
   return (
     <div className="min-h-screen bg-frost">
       {/* Top bar — spans the full width, above the sidebar column. */}
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-slate-line bg-white px-4 lg:px-6">
+      <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-slate-line bg-surface px-4 lg:px-6">
         <div className="w-auto lg:w-52">
           <Wordmark />
         </div>
@@ -134,7 +138,7 @@ function Shell() {
             setMenuOpen((v) => !v)
             setRailOpen((v) => !v)
           }}
-          className="rounded-lg p-2 text-slate transition hover:bg-frost hover:text-marine"
+          className="rounded-lg p-2 text-slate transition hover:bg-frost hover:text-ink"
           aria-label="Toggle navigation"
         >
           <Menu size={20} />
@@ -142,7 +146,8 @@ function Shell() {
 
         {/* One control, and it does what it says. The Support and Schedule
             icons that used to sit here were decoration with no handler. */}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1">
+          <ThemeToggle />
           <NotificationBell />
         </div>
 
@@ -242,7 +247,7 @@ function SidebarBody({ items, view, onSelect, onReset, name }) {
               {active && (
                 <span
                   aria-hidden
-                  className="absolute inset-y-1.5 left-0 w-1 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                  className="absolute inset-y-1.5 left-0 w-1 rounded-full bg-surface shadow-[0_0_12px_rgba(255,255,255,0.8)]"
                 />
               )}
               <span

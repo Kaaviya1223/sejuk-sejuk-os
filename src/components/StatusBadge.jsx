@@ -1,4 +1,5 @@
-import { STATUS_COLORS } from '../lib/palette.js'
+import { statusColors } from '../lib/palette.js'
+import { useTheme } from '../context/theme.js'
 
 /**
  * Status names match the workflow exactly (New → Assigned → In Progress →
@@ -12,15 +13,16 @@ import { STATUS_COLORS } from '../lib/palette.js'
  */
 
 const TEXT_STYLES = {
-  New: 'bg-marine-100 text-marine-600',
-  Assigned: 'bg-copper/10 text-copper',
-  'In Progress': 'bg-coolant-50 text-coolant-700',
-  'Job Done': 'bg-amber-50 text-amber-800',
-  Reviewed: 'bg-pink-50 text-pink-700',
-  Closed: 'bg-success-50 text-success-700',
+  New: 'bg-marine-100 text-brand',
+  Assigned: 'bg-copper/10 text-copper dark:text-[#E2A288]',
+  'In Progress': 'bg-coolant-50 text-coolant-700 dark:text-[#5FD3C0]',
+  'Job Done': 'bg-amber-50 text-amber-800 dark:bg-amber-400/15 dark:text-amber-300',
+  Reviewed: 'bg-pink-50 text-pink-700 dark:bg-pink-400/15 dark:text-pink-300',
+  Closed: 'bg-success-50 text-success-700 dark:text-[#5FD07E]',
 }
 
 function StatusBadge({ status, size = 'md', onDark = false }) {
+  const { theme } = useTheme()
   const style = onDark
     ? 'bg-white/20 text-white'
     : (TEXT_STYLES[status] ?? 'bg-frost-deep text-slate')
@@ -32,7 +34,7 @@ function StatusBadge({ status, size = 'md', onDark = false }) {
     >
       <span
         className="mr-1.5 h-1.5 w-1.5 rounded-full"
-        style={{ backgroundColor: onDark ? '#FFFFFF' : (STATUS_COLORS[status] ?? '#5A6B80') }}
+        style={{ backgroundColor: onDark ? '#FFFFFF' : (statusColors(theme)[status] ?? '#5A6B80') }}
       />
       {status}
     </span>

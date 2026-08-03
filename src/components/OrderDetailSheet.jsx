@@ -151,8 +151,8 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
               onClick={() => setTab(t.key)}
               className={`-mb-px border-b-2 px-3 py-2 text-sm transition ${
                 tab === t.key
-                  ? 'border-coolant font-medium text-marine'
-                  : 'border-transparent text-slate hover:text-marine'
+                  ? 'border-coolant font-medium text-ink'
+                  : 'border-transparent text-slate hover:text-ink'
               }`}
             >
               {t.label}
@@ -192,7 +192,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
 
             {isAdmin && order.status !== 'Closed' && (
               <div className="rounded-xl border border-slate-line bg-frost/60 p-3">
-                <p className="mb-2 text-xs font-medium text-marine">
+                <p className="mb-2 text-xs font-medium text-ink">
                   Reassign technician
                   <span className="ml-1.5 font-normal text-slate">
                     (Admin only — sends a WhatsApp job brief)
@@ -213,7 +213,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
 
             {isManager && order.status === 'Job Done' && (
               <div className="rounded-xl border border-slate-line bg-frost/60 p-3">
-                <p className="mb-2 text-xs font-medium text-marine">Review note (optional)</p>
+                <p className="mb-2 text-xs font-medium text-ink">Review note (optional)</p>
                 <Textarea
                   rows={2}
                   value={reviewNote}
@@ -239,7 +239,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                   href={file.public_url ?? '#'}
                   target="_blank"
                   rel="noreferrer"
-                  className="group overflow-hidden rounded-xl border border-slate-line bg-white transition hover:shadow-card"
+                  className="group overflow-hidden rounded-xl border border-slate-line bg-surface transition hover:shadow-card"
                 >
                   {file.mime_type?.startsWith('image/') ? (
                     <img
@@ -258,7 +258,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                     </div>
                   )}
                   <div className="px-2 py-1.5">
-                    <p className="truncate text-[11px] font-medium text-marine">{file.file_name}</p>
+                    <p className="truncate text-[11px] font-medium text-ink">{file.file_name}</p>
                     <p className="text-[10px] text-slate">
                       {file.kind === 'receipt' ? 'Receipt · ' : ''}
                       {fileSize(file.size_bytes)}
@@ -304,7 +304,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                   <span className="w-px flex-1 bg-slate-line" />
                 </div>
                 <div className="pb-1">
-                  <p className="text-sm text-marine">
+                  <p className="text-sm text-ink">
                     <span className="font-medium">{entry.action}</span>
                     {entry.from_status && entry.to_status && (
                       <span className="text-slate">
@@ -330,7 +330,7 @@ function Detail({ label, value, numeric = false, span = false }) {
   return (
     <div className={span ? 'sm:col-span-2' : ''}>
       <dt className="text-[11px] uppercase tracking-wide text-slate-light">{label}</dt>
-      <dd className={`mt-0.5 text-sm text-marine ${numeric ? 'tabular-nums' : ''}`}>
+      <dd className={`mt-0.5 text-sm text-ink ${numeric ? 'tabular-nums' : ''}`}>
         {value || <span className="text-slate-light">—</span>}
       </dd>
     </div>

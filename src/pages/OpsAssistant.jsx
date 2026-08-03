@@ -87,7 +87,7 @@ function OpsAssistant() {
                   key={s}
                   onClick={() => ask(s)}
                   disabled={loading}
-                  className="rounded-full border border-slate-line bg-white px-3 py-1 text-xs text-slate transition hover:border-coolant hover:text-coolant-700 disabled:opacity-50"
+                  className="rounded-full border border-slate-line bg-surface px-3 py-1 text-xs text-slate transition hover:border-coolant hover:text-coolant-700 disabled:opacity-50"
                 >
                   {s}
                 </button>
@@ -126,19 +126,19 @@ function OpsAssistant() {
             <CardHeader title="How it works" />
             <ol className="space-y-2.5 px-5 py-4 text-xs text-slate">
               <li>
-                <span className="font-medium text-marine">1 · Classify.</span> The model turns your
+                <span className="font-medium text-ink">1 · Classify.</span> The model turns your
                 sentence into an intent plus parameters — nothing more.
               </li>
               <li>
-                <span className="font-medium text-marine">2 · Retrieve.</span> The server runs the
+                <span className="font-medium text-ink">2 · Retrieve.</span> The server runs the
                 one query that intent declares: fixed columns, a bounded date window, a row cap.
               </li>
               <li>
-                <span className="font-medium text-marine">3 · Compute.</span> Counts and totals are
+                <span className="font-medium text-ink">3 · Compute.</span> Counts and totals are
                 worked out in code, so a figure can never be invented.
               </li>
               <li>
-                <span className="font-medium text-marine">4 · Phrase.</span> The model writes the
+                <span className="font-medium text-ink">4 · Phrase.</span> The model writes the
                 sentence around those numbers.
               </li>
             </ol>
@@ -156,7 +156,7 @@ function Answer({ entry }) {
   return (
     <Card padded={false}>
       <div className="border-b border-slate-line px-5 py-3">
-        <p className="text-sm font-medium text-marine">{question}</p>
+        <p className="text-sm font-medium text-ink">{question}</p>
       </div>
 
       <div className="px-5 py-4">
@@ -164,7 +164,7 @@ function Answer({ entry }) {
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-coolant-50 text-coolant">
             <Sparkles size={16} />
           </span>
-          <p className="whitespace-pre-line text-sm leading-relaxed text-marine">{result.answer}</p>
+          <p className="whitespace-pre-line text-sm leading-relaxed text-ink">{result.answer}</p>
         </div>
 
         {result.retrieval && (
@@ -183,7 +183,7 @@ function Answer({ entry }) {
         <div className="border-t border-slate-line p-3">
           <Section title="Data used for this answer" icon={Database} defaultOpen={false}>
             <p className="mb-2 text-[11px] text-slate">
-              <span className="font-medium text-marine">
+              <span className="font-medium text-ink">
                 select {result.retrieval.columns.join(', ')} from {result.retrieval.table}
               </span>
               {result.retrieval.filters.map((f) => (
@@ -210,10 +210,10 @@ function Answer({ entry }) {
                   <tbody className="divide-y divide-slate-line">
                     {rows.map((r) => (
                       <tr key={r.order_no}>
-                        <td className="px-4 py-1.5 tabular-nums text-marine">{r.order_no}</td>
+                        <td className="px-4 py-1.5 tabular-nums text-ink">{r.order_no}</td>
                         <td className="px-2 py-1.5 text-slate">{r.assigned_technician ?? '—'}</td>
                         <td className="px-2 py-1.5 text-slate">{dateOnly(r.completed_at)}</td>
-                        <td className="px-4 py-1.5 text-right tabular-nums text-marine">
+                        <td className="px-4 py-1.5 text-right tabular-nums text-ink">
                           {money(r.final_amount)}
                         </td>
                       </tr>
