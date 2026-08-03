@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react'
 import StatusBadge from './StatusBadge.jsx'
 import StatusTrack from './StatusTrack.jsx'
 import { EmptyState, SkeletonRows } from './ui.jsx'
-import { money, relativeTime } from '../lib/format.js'
+import { initials, money, relativeTime } from '../lib/format.js'
 
 /**
  * One list component for every desktop portal.
@@ -31,7 +31,9 @@ function OrderList({ orders, loading, onSelect, emptyTitle = 'No orders', emptyB
             <button
               key={order.id}
               onClick={() => onSelect?.(order)}
-              className="grid w-full grid-cols-[1.5fr_1fr_1.3fr_0.9fr_0.7fr] items-center gap-4 px-5 py-3.5 text-left transition hover:bg-frost/60"
+              /* The left edge lights up on hover: a row of five columns gives
+                 the eye nothing to track, and the whole row is the target. */
+              className="group grid w-full grid-cols-[1.5fr_1fr_1.3fr_0.9fr_0.7fr] items-center gap-4 border-l-2 border-transparent px-5 py-3.5 text-left transition hover:border-coolant hover:bg-frost/60"
             >
               <div className="min-w-0">
                 <p className="tabular-nums text-sm text-ink">{order.order_no}</p>
@@ -43,9 +45,24 @@ function OrderList({ orders, loading, onSelect, emptyTitle = 'No orders', emptyB
                 <StatusBadge status={order.status} size="sm" />
               </span>
               <StatusTrack status={order.status} />
-              <p className="truncate text-xs font-medium text-ink">
-                {order.assigned_technician || <span className="text-slate-light">Unassigned</span>}
-              </p>
+
+              {/* A face for the name — four technicians recur constantly, and
+                  an initial is quicker to match than reading the word. */}
+              <div className="flex min-w-0 items-center gap-2">
+                {order.assigned_technician ? (
+                  <>
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-marine-100 text-[10px] font-semibold text-brand">
+                      {initials(order.assigned_technician)}
+                    </span>
+                    <span className="truncate text-xs font-medium text-ink">
+                      {order.assigned_technician}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-xs text-slate-light">Unassigned</span>
+                )}
+              </div>
+
               <p className="text-right tabular-nums text-xs text-ink">
                 {money(order.final_amount ?? order.quoted_price)}
               </p>

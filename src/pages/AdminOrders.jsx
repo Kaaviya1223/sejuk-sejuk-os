@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CheckCircle2, Plus, RefreshCw, Search } from 'lucide-react'
+import { CheckCircle2, Plus, RefreshCw, Search, X } from 'lucide-react'
 
 import {
   Alert,
@@ -17,6 +17,8 @@ import OrderList from '../components/OrderList.jsx'
 import OrderDetailSheet from '../components/OrderDetailSheet.jsx'
 import WhatsAppPreview from '../components/WhatsAppPreview.jsx'
 import { useSession } from '../context/session.js'
+import { useTheme } from '../context/theme.js'
+import { statusColors } from '../lib/palette.js'
 import { BRANCHES, SERVICE_TYPES, STATUSES } from '../lib/constants.js'
 import { money } from '../lib/format.js'
 import { createOrder, listOrders, sendAssignmentNotification } from '../lib/orders.js'
@@ -43,6 +45,7 @@ const BLANK = {
  */
 function AdminOrders() {
   const { actor, technicians, isAdmin } = useSession()
+  const { theme } = useTheme()
 
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -54,22 +57,38 @@ function AdminOrders() {
   const [error, setError] = useState(null)
   const [receipt, setReceipt] = useState(null)
 
+  /**
+   * Search still goes to the database — it has to, since it matches on fields
+   * the browser may not have loaded. Status and technician are then narrowed in
+   * memory, which is what lets each filter show its own count without a query
+   * per chip. Fine against the 200-row cap; past that the counts belong in a
+   * Postgres aggregate, like the rest of the dashboard maths.
+   */
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setOrders(await listOrders(filters))
+      setOrders(await listOrders({ search: filters.search }))
       setError(null)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [filters])
+  }, [filters.search])
 
   useEffect(() => {
     const timer = setTimeout(load, filters.search ? 300 : 0)
     return () => clearTimeout(timer)
   }, [load, filters.search])
+
+  const visible = orders.filter(
+    (o) =>
+      (filters.status === 'All' || o.status === filters.status) &&
+      (filters.technician === 'All' || o.assigned_technician === filters.technician),
+  )
+
+  const countFor = (status) =>
+    status === 'All' ? orders.length : orders.filter((o) => o.status === status).length
 
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))
 
@@ -149,50 +168,86 @@ function AdminOrders() {
 
       <Card padded={false}>
         <CardHeader
-          title={`${orders.length} order${orders.length === 1 ? '' : 's'}`}
+          title={
+            visible.length === orders.length
+              ? `${orders.length} order${orders.length === 1 ? '' : 's'}`
+              : `${visible.length} of ${orders.length} orders`
+          }
           subtitle="Newest first"
+          actions={
+            (filters.status !== 'All' || filters.technician !== 'All') && (
+              <button
+                onClick={() => setFilters({ ...filters, status: 'All', technician: 'All' })}
+                className="flex items-center gap-1 rounded-lg border border-slate-line px-2.5 py-1 text-xs font-medium text-slate transition hover:bg-frost hover:text-ink"
+              >
+                <X size={12} />
+                Clear filters
+              </button>
+            )
+          }
         />
 
-        {/* Filters sit in their own row rather than crowding the heading. */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-line bg-frost/50 px-5 py-3">
-          <div className="relative min-w-[12rem] flex-1 sm:max-w-xs">
-            <Search
-              size={14}
-              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-light"
-            />
-            <Input
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              placeholder="Order no, customer, phone…"
-              className="py-1.5 pl-8 text-xs"
-            />
+        <div className="space-y-3 border-b border-slate-line bg-frost/50 px-5 py-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[12rem] flex-1 sm:max-w-xs">
+              <Search
+                size={14}
+                className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-light"
+              />
+              <Input
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                placeholder="Order no, customer, phone…"
+                className="py-1.5 pl-8 text-xs"
+              />
+            </div>
+            <Select
+              value={filters.technician}
+              onChange={(e) => setFilters({ ...filters, technician: e.target.value })}
+              className="!w-40 py-1.5 text-xs"
+              aria-label="Filter by technician"
+            >
+              {/* Value, not label: the filter compares against "All". */}
+              <option value="All">All technicians</option>
+              {technicians.map((t) => (
+                <option key={t.name}>{t.name}</option>
+              ))}
+            </Select>
           </div>
-          <Select
-            value={filters.status}
-            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            className="!w-36 py-1.5 text-xs"
-            aria-label="Filter by status"
-          >
-            <option>All</option>
-            {STATUSES.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </Select>
-          <Select
-            value={filters.technician}
-            onChange={(e) => setFilters({ ...filters, technician: e.target.value })}
-            className="!w-36 py-1.5 text-xs"
-            aria-label="Filter by technician"
-          >
-            <option>All</option>
-            {technicians.map((t) => (
-              <option key={t.name}>{t.name}</option>
-            ))}
-          </Select>
+
+          {/* Status as chips rather than a dropdown: the six states and how
+              much work sits in each are the thing an admin is here to see, and
+              a <select> hides both behind a click. */}
+          <div className="flex flex-wrap gap-1.5">
+            {['All', ...STATUSES].map((status) => {
+              const active = filters.status === status
+              const count = countFor(status)
+              return (
+                <button
+                  key={status}
+                  onClick={() => setFilters({ ...filters, status })}
+                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition ${
+                    active
+                      ? 'border-transparent bg-marine text-white'
+                      : 'border-slate-line bg-surface text-slate hover:border-coolant/60 hover:text-ink'
+                  } ${!count && !active ? 'opacity-50' : ''}`}
+                >
+                  {status !== 'All' && (
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: statusColors(theme)[status] }}
+                    />
+                  )}
+                  {status}
+                  <span className={active ? 'text-white/70' : 'text-slate-light'}>{count}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         <OrderList
-          orders={orders}
+          orders={visible}
           loading={loading}
           onSelect={setSelected}
           emptyTitle="No orders match these filters"
