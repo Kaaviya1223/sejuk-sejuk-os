@@ -137,6 +137,24 @@ supervisor, so the thresholds live in `RULES` where they can be read and
 argued with. Missing `job_files` means "cannot tell" rather than "no evidence",
 so the rule sits out rather than flagging every job.
 
+### Manager — review queue
+
+Managers own the last three steps of the workflow, but until now they signed
+off from inside an order sheet reached through the same list an admin uses for
+intake — two roles, one screen, no sense that they do different jobs.
+
+**Review queue** is a manager-only page holding everything at `Job Done`, with
+the decision and the evidence for it on one screen: quoted against final with
+the variance called out, what the technician wrote, and the photos or documents
+they attached. Approve or reopen inline, with an optional review note. Cards
+whose amount ran over quote, or that arrived with nothing attached, carry the
+alert accent.
+
+The dashboard also opens differently per role: an admin's day starts with work
+coming in ("3 orders with no technician assigned"), a manager's with work
+waiting to be signed off ("6 completed jobs waiting for your review"), each
+with a way straight there.
+
 ### AI Module — Operations Query Window
 
 A manager-only side panel answering four kinds of operational question from
@@ -252,7 +270,7 @@ src/
                OrderList · OrderDetailSheet · JobCompletionSheet
                WhatsAppPreview · StatusBadge · StatusTrack
   pages/       Overview.jsx · AdminOrders.jsx · TechnicianPortal.jsx
-               Performance.jsx (KPI)
+               ReviewQueue.jsx (manager sign-off) · Performance.jsx (KPI)
 api/
   notify.js    Module 3: the Job Done WhatsApp trigger
   query.js     the AI endpoint: classify → retrieve → compute → phrase
@@ -423,9 +441,6 @@ as out of scope.
   challenges are built: the workflow supervisor above, and operational insight
   via the `technician_workload` intent, which flags anyone running 30% above
   the team average.
-- **A manager review queue.** Managers review and close from the order detail
-  sheet, which the state machine drives correctly, but there is no page that
-  gathers everything sitting at `Job Done` into one queue.
 
 ---
 

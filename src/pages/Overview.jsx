@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
+  ArrowRight,
   CalendarDays,
+  ClipboardCheck,
   CheckCircle2,
   ClipboardList,
   Clock,
   Inbox,
   PlayCircle,
+  ShieldCheck,
   UserCheck,
   Users,
   Wallet,
 } from 'lucide-react'
 
-import { Alert, Card, CardHeader, PageHeader, Stat } from '../components/ui.jsx'
+import { Alert, Button, Card, CardHeader, PageHeader, Stat } from '../components/ui.jsx'
 import { CompletionMeter, StatusMix, TechnicianLoad } from '../components/charts.jsx'
 import OrderList from '../components/OrderList.jsx'
 import SupervisorCard from '../components/SupervisorCard.jsx'
@@ -126,6 +129,12 @@ function Overview({ onNavigate, today }) {
         />
       </div>
 
+
+      {/* The one difference a role should feel on landing. An admin's day
+          starts with work coming in; a manager's starts with work waiting to
+          be signed off. Same dashboard, different first sentence. */}
+      {!loading && <NextAction role={session.role} orders={orders} onNavigate={onNavigate} />}
+
       {error && (
         <div className="mt-6">
           <Alert tone="error">{error}</Alert>
@@ -206,6 +215,77 @@ function Overview({ onNavigate, today }) {
         }}
       />
     </>
+  )
+}
+
+
+/**
+ * A single line saying what this person is here to do next.
+ *
+ * An admin's day starts with work coming in; a manager's starts with work
+ * waiting to be signed off. It renders in the clear state too — quietly — so
+ * the two roles never land on an identical screen.
+ */
+function NextAction({ role, orders, onNavigate }) {
+  const waiting = orders.filter((o) => o.status === 'Job Done').length
+  const unassigned = orders.filter((o) => o.status === 'New').length
+
+  const next =
+    role === 'Manager'
+      ? {
+          urgent: waiting > 0,
+          icon: waiting > 0 ? ClipboardCheck : ShieldCheck,
+          text:
+            waiting > 0
+              ? `${waiting} completed job${waiting === 1 ? '' : 's'} waiting for your review`
+              : 'Nothing waiting for review — every completed job is signed off',
+          cta: 'Open review queue',
+          go: 'review',
+        }
+      : {
+          urgent: unassigned > 0,
+          icon: unassigned > 0 ? UserCheck : ShieldCheck,
+          text:
+            unassigned > 0
+              ? `${unassigned} order${unassigned === 1 ? '' : 's'} with no technician assigned`
+              : 'Every order has a technician assigned',
+          cta: 'Go to orders',
+          go: 'orders',
+        }
+
+  const Icon = next.icon
+
+  return (
+    <div
+      className={`mt-6 flex flex-wrap items-center gap-3 rounded-2xl border px-4 py-3 ${
+        next.urgent ? 'border-coolant/30 bg-coolant-50' : 'border-slate-line bg-surface'
+      }`}
+    >
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+          next.urgent
+            ? 'bg-gradient-to-br from-coolant to-coolant-600 text-white shadow-glow-teal'
+            : 'bg-frost-deep text-slate'
+        }`}
+      >
+        <Icon size={17} />
+      </span>
+      <p
+        className={`min-w-0 flex-1 text-sm ${
+          next.urgent ? 'font-medium text-ink' : 'text-slate'
+        }`}
+      >
+        {next.text}
+      </p>
+      <Button
+        size="sm"
+        variant={next.urgent ? 'primary' : 'outline'}
+        onClick={() => onNavigate?.(next.go)}
+      >
+        {next.cta}
+        <ArrowRight size={14} />
+      </Button>
+    </div>
   )
 }
 

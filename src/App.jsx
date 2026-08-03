@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  ClipboardCheck,
   ClipboardList,
   LayoutDashboard,
   Menu,
@@ -23,11 +24,13 @@ import { dateOnly } from './lib/format.js'
 import Overview from './pages/Overview.jsx'
 import AdminOrders from './pages/AdminOrders.jsx'
 import Performance from './pages/Performance.jsx'
+import ReviewQueue from './pages/ReviewQueue.jsx'
 import TechnicianPortal from './pages/TechnicianPortal.jsx'
 
 const NAV = [
   { key: 'overview', label: 'Dashboard', icon: LayoutDashboard, roles: ['Admin', 'Manager'] },
   { key: 'orders', label: 'Orders', icon: ClipboardList, roles: ['Admin', 'Manager'] },
+  { key: 'review', label: 'Review queue', icon: ClipboardCheck, roles: ['Manager'] },
   { key: 'performance', label: 'Performance', icon: Trophy, roles: ['Admin', 'Manager'] },
   { key: 'jobs', label: 'My Jobs', icon: Wrench, roles: ['Technician'] },
 ]
@@ -35,6 +38,7 @@ const NAV = [
 const PAGES = {
   overview: Overview,
   orders: AdminOrders,
+  review: ReviewQueue,
   performance: Performance,
   jobs: TechnicianPortal,
 }

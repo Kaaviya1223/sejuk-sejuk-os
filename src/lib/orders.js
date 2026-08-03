@@ -45,6 +45,31 @@ export async function listTechnicians() {
   return data
 }
 
+/**
+ * Evidence for several orders at once, keyed by order id.
+ *
+ * The review queue shows what each technician attached, and asking per row
+ * would be one round trip per job on a list built for scanning.
+ */
+export async function listJobFilesForOrders(orderIds = []) {
+  if (!orderIds.length) return new Map()
+
+  const { data, error } = await supabase
+    .from('job_files')
+    .select('*')
+    .in('order_id', orderIds)
+    .order('created_at')
+
+  if (error) {
+    if (isMissingSchema(error)) return new Map()
+    throw error
+  }
+
+  const byOrder = new Map(orderIds.map((id) => [id, []]))
+  for (const file of data ?? []) byOrder.get(file.order_id)?.push(file)
+  return byOrder
+}
+
 export async function listJobFiles(orderId) {
   const { data, error } = await supabase
     .from('job_files')
