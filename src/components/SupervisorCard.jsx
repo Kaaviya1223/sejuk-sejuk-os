@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react'
 
 import { Card, CardHeader, EmptyState, Skeleton } from './ui.jsx'
 import { money } from '../lib/format.js'
+import { postJson } from '../lib/api.js'
 
 /**
  * Advanced AI challenge — Workflow Supervisor.
@@ -19,16 +20,7 @@ function SupervisorCard({ onOpenOrder }) {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/supervise', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      })
-      const raw = await res.text()
-      const parsed = raw ? JSON.parse(raw) : null
-      if (!parsed) throw new Error('The supervisor endpoint is not available here.')
-      if (!res.ok) throw new Error(parsed.error || 'The supervisor could not run.')
-      setData(parsed)
+      setData(await postJson('/api/supervise'))
       setError(null)
     } catch (err) {
       setError(err.message)
