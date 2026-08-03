@@ -65,8 +65,14 @@ export default {
         copper: '#C1694F',
       },
       fontFamily: {
-        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
+        /**
+         * One typeface. Headings previously used a geometric display face,
+         * whose flat-topped 1 and perfectly round 0 read as stylised on an
+         * order number — the thing staff read most. Hierarchy comes from
+         * weight, size and tracking instead.
+         */
+        display: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        body: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         // Reserved for text that really is code — table names, file paths.
         // Identifiers and money use the body sans with `tabular-nums` instead,
         // which aligns in columns without reading like a terminal.

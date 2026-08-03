@@ -35,7 +35,7 @@ export function PageHeader({ title, subtitle, actions, deep = false }) {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl font-semibold tracking-tight text-white drop-shadow-sm sm:text-2xl">
+          <h1 className="font-display text-xl font-bold tracking-tight text-white drop-shadow-sm sm:text-2xl">
             {title}
           </h1>
           {subtitle && <p className="mt-1 text-sm text-white/80">{subtitle}</p>}

@@ -170,7 +170,7 @@ retrieval behind it. Full detail, including what it cannot do, is in
 | Layer | Choice |
 | --- | --- |
 | Front-end | React 19 + Vite |
-| Styling | Tailwind CSS 3 |
+| Styling | Tailwind CSS 3, Inter throughout |
 | Database | Supabase (Postgres + PostgREST) |
 | File storage | Supabase Storage |
 | Icons | lucide-react |
