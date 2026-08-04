@@ -139,8 +139,11 @@ returns what was already sent rather than notifying twice, unless `force` is
 passed. Job completion calls this endpoint and falls back to building the
 messages in the browser if it is unreachable.
 
-Delivery is a `wa.me` deep link, which the brief allows. There are no WhatsApp
-Business API credentials for this build.
+Delivery is a `wa.me` deep link, which is the method the brief names. There are
+no WhatsApp Business API credentials for this build, and getting them needs a
+verified business behind the number. Swapping one in means replacing a single
+function in [`api/notify.js`](api/notify.js) and handling its status webhooks:
+the deep link sits behind a boundary rather than spread through the app.
 
 ### KPI dashboard
 
@@ -502,15 +505,10 @@ database is open to anyone holding the URL.
 
 ## What is not built
 
-- **Real WhatsApp delivery, and therefore real delivery status.** The trigger
-  generates, records and returns a `wa.me` link, and a human taps send. The app
-  records that the link was opened and lets the sender confirm it went, which is
-  as far as a deep link can go. Swapping in the Business API means replacing one
-  function in `api/notify.js` and handling its status webhooks.
-- **AI document understanding.** Extracting fields
-  from an uploaded invoice needs a vision call per document, and in this system
-  the evidence already arrives as structured fields the technician typed, so it
-  would re-derive what the form already collected.
+- **AI document understanding.** Extracting fields from an uploaded invoice
+  needs a vision call per document, and in this system the evidence already
+  arrives as structured fields the technician typed, so it would re-derive what
+  the form already collected.
 
 ---
 
