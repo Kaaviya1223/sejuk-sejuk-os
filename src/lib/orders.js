@@ -326,6 +326,58 @@ export async function assignTechnician(order, technicianName, actor) {
   return data
 }
 
+/** The intake fields an admin can correct once the order exists. */
+const EDITABLE_DETAILS = ['customer_name', 'phone', 'address']
+
+/**
+ * Corrects the customer details on an existing order.
+ *
+ * Intake typos are ordinary — a transposed phone number, the wrong unit on a
+ * block of flats — and until this existed the only remedy was deleting the
+ * order and re-entering it, which threw away its files, its messages and its
+ * trail. Correcting in place keeps all three.
+ *
+ * Only changed fields are written, and the audit entry carries the previous
+ * value of each, so a correction is visible in the trail rather than silently
+ * replacing what the record used to say. Notifications already generated keep
+ * the old details on purpose: they are a log of what was actually sent.
+ */
+export async function updateOrderDetails(order, form, actor) {
+  const patch = {
+    customer_name: form.customer_name?.trim() || '',
+    phone: form.phone?.trim() || null,
+    address: form.address?.trim() || null,
+  }
+
+  if (!patch.customer_name) throw new Error('Customer name cannot be empty.')
+
+  const changed = EDITABLE_DETAILS.filter((key) => (patch[key] ?? null) !== (order[key] ?? null))
+  // Saving without touching anything should not write a row or log an edit.
+  if (!changed.length) return order
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update(Object.fromEntries(changed.map((key) => [key, patch[key]])))
+    .eq('id', order.id)
+    .select()
+    .single()
+
+  if (error) throw error
+
+  await logAudit({
+    order_id: order.id,
+    order_no: order.order_no,
+    action: 'order.details_updated',
+    actor_role: actor.role,
+    actor_name: actor.name,
+    detail: Object.fromEntries(
+      changed.map((key) => [key, { from: order[key] ?? null, to: patch[key] }]),
+    ),
+  })
+
+  return data
+}
+
 export async function updateStatus(order, toStatus, actor, extra = {}) {
   const patch = { status: toStatus, ...extra }
 

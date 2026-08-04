@@ -1,7 +1,7 @@
 import { Children, isValidElement, useCallback, useEffect, useState } from 'react'
-import { FileText, Paperclip, Send } from 'lucide-react'
+import { FileText, Paperclip, Pencil, Send } from 'lucide-react'
 
-import { Alert, Button, Pill, Select, Sheet, Textarea } from './ui.jsx'
+import { Alert, Button, Field, Input, Pill, Select, Sheet, Textarea } from './ui.jsx'
 import StatusBadge from './StatusBadge.jsx'
 import WhatsAppPreview from './WhatsAppPreview.jsx'
 import { templateLabel } from '../lib/whatsapp.js'
@@ -14,6 +14,7 @@ import {
   listJobFiles,
   listNotifications,
   sendAssignmentNotification,
+  updateOrderDetails,
   updateStatus,
 } from '../lib/orders.js'
 
@@ -26,6 +27,7 @@ const ACTION_LABELS = {
   'order.created': 'Order created',
   'order.assigned': 'Technician assigned',
   'order.status_changed': 'Status changed',
+  'order.details_updated': 'Customer details corrected',
   'order.rescheduled': 'Postponed',
   'job.completed': 'Job completed',
 }
@@ -65,6 +67,8 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
   const [busy, setBusy] = useState(null)
   const [error, setError] = useState(null)
   const [reviewNote, setReviewNote] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [details, setDetails] = useState({ customer_name: '', phone: '', address: '' })
 
   const refresh = useCallback(async () => {
     if (!order?.id) return
@@ -83,6 +87,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
       setTab('details')
       setError(null)
       setReviewNote('')
+      setEditing(false)
       refresh()
     }
   }, [open, refresh])
@@ -122,6 +127,35 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
       setBusy(null)
     }
   }
+
+  const startEditing = () => {
+    setDetails({
+      customer_name: order.customer_name ?? '',
+      phone: order.phone ?? '',
+      address: order.address ?? '',
+    })
+    setError(null)
+    setEditing(true)
+  }
+
+  const saveDetails = async (event) => {
+    event.preventDefault()
+    setBusy('details')
+    setError(null)
+    try {
+      const updated = await updateOrderDetails(order, details, actor)
+      onChanged?.(updated)
+      setEditing(false)
+      await refresh()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  // Corrections are an admin job, and a closed order is a finished record.
+  const canEditDetails = isAdmin && order.status !== 'Closed'
 
   const variance =
     order.final_amount != null && order.quoted_price != null
@@ -197,11 +231,74 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                 reads as a data dump. Optional fields that are empty are left
                 out entirely rather than printing a dash — an absent remark is
                 not information. */}
-            <Group title="Customer">
-              <Detail label="Name" value={order.customer_name} />
-              <Detail label="Phone" value={displayPhone(order.phone)} numeric />
-              <Detail label="Address" value={order.address} span />
-            </Group>
+            {editing ? (
+              <section>
+                <h3 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-wide text-brand">
+                  Customer
+                </h3>
+                <form onSubmit={saveDetails} className="space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Customer name" required>
+                      <Input
+                        value={details.customer_name}
+                        onChange={(e) => setDetails({ ...details, customer_name: e.target.value })}
+                        required
+                        autoFocus
+                      />
+                    </Field>
+                    <Field label="Phone" hint="For WhatsApp updates">
+                      <Input
+                        value={details.phone}
+                        onChange={(e) => setDetails({ ...details, phone: e.target.value })}
+                        inputMode="tel"
+                        placeholder="012-345 6789"
+                        className="tabular-nums"
+                      />
+                    </Field>
+                  </div>
+                  <Field label="Address">
+                    <Textarea
+                      rows={2}
+                      value={details.address}
+                      onChange={(e) => setDetails({ ...details, address: e.target.value })}
+                    />
+                  </Field>
+                  {/* Said plainly, because someone correcting a wrong number
+                      will reasonably expect the messages to follow. */}
+                  <p className="text-xs text-slate">
+                    Messages already sent keep the details they were sent with.
+                  </p>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" type="button" onClick={() => setEditing(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" loading={busy === 'details'}>
+                      Save details
+                    </Button>
+                  </div>
+                </form>
+              </section>
+            ) : (
+              <Group
+                title="Customer"
+                action={
+                  canEditDetails && (
+                    <button
+                      type="button"
+                      onClick={startEditing}
+                      className="flex items-center gap-1 text-[11px] font-medium text-brand hover:underline"
+                    >
+                      <Pencil size={11} />
+                      Edit
+                    </button>
+                  )
+                }
+              >
+                <Detail label="Name" value={order.customer_name} />
+                <Detail label="Phone" value={displayPhone(order.phone)} numeric />
+                <Detail label="Address" value={order.address} span />
+              </Group>
+            )}
 
             <Group title="The job">
               <Detail label="Problem reported" value={order.problem_description} span />
@@ -378,7 +475,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
  * so an order with no review yet doesn't show a "History" heading over four
  * dashes.
  */
-function Group({ title, children }) {
+function Group({ title, children, action = null }) {
   const filled = Children.toArray(children).filter((child) => {
     if (!isValidElement(child)) return Boolean(child)
     // Non-Detail children (the money row) carry their own emptiness rules.
@@ -388,9 +485,12 @@ function Group({ title, children }) {
 
   return (
     <section>
-      <h3 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-wide text-brand">
-        {title}
-      </h3>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h3 className="font-display text-[11px] font-semibold uppercase tracking-wide text-brand">
+          {title}
+        </h3>
+        {action}
+      </div>
       <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">{filled}</dl>
     </section>
   )
