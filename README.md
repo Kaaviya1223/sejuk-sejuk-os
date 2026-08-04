@@ -8,6 +8,22 @@ traceable history.
 **Repo:** https://github.com/Kaaviya1223/utopia-ops-assessment
 **Live demo:** _add your Vercel URL here_
 
+### Deploying
+
+Import the repo on Vercel. It detects Vite, builds to `dist`, and turns each
+file in `api/` into a serverless function with no extra config. Set three
+environment variables before the first deploy:
+
+| Variable | Value | Used by |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | your project URL | browser and functions |
+| `VITE_SUPABASE_ANON_KEY` | the publishable key | browser and functions |
+| `GEMINI_API_KEY` | Google AI Studio key | functions only |
+
+`GEMINI_MODEL` and `MANAGER_WHATSAPP` are optional. The Gemini key has no
+`VITE_` prefix on purpose: anything prefixed that way is inlined into the
+JavaScript bundle and readable by every visitor.
+
 **What is covered:** Module 1, Module 2 and Module 3, plus both WhatsApp
 bonuses, the KPI dashboard, the AI Operations Query Window, and two of the three
 advanced AI challenges (workflow supervisor and operational insight). AI
