@@ -57,7 +57,7 @@ export const BRANCHES = ['Shah Alam', 'Petaling Jaya', 'Cheras', 'Klang', 'Serem
  *
  * The roster ships with no number. WhatsApp delivery is a manual `wa.me` tap,
  * and an unset number still opens WhatsApp with the job brief pre-filled for
- * the sender to address — so the link demonstrates itself without a real
+ * the sender to address, so the link demonstrates itself without a real
  * handset living in a public repo. Set `VITE_DEMO_PHONE` in a local `.env` to
  * point the whole roster at one number and receive the briefs while testing.
  * Real dispatch reads per-technician numbers from the `technicians` table.

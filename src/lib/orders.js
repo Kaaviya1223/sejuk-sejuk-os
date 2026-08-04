@@ -356,11 +356,11 @@ function unchanged(before, after) {
 /**
  * Corrects the details on an existing order.
  *
- * Intake mistakes are ordinary — a transposed phone number, the wrong unit on
- * a block of flats, a quote entered as 350 when it was agreed at 3500 — and
- * until this existed the only remedy was deleting the order and re-entering
- * it, which threw away its files, its messages and its trail. Correcting in
- * place keeps all three.
+ * Intake mistakes are ordinary: a transposed phone number, the wrong unit on a
+ * block of flats, a quote entered as 350 when it was agreed at 3500. Until
+ * this existed the only remedy was deleting the order and re-entering it,
+ * which threw away its files, its messages and its trail. Correcting in place
+ * keeps all three.
  *
  * Only changed fields are written, and the audit entry carries the previous
  * value of each, so a correction is visible in the trail rather than silently
@@ -369,7 +369,7 @@ function unchanged(before, after) {
  * so an edit after completion moves reported numbers, and the trail is what
  * makes that legible afterwards.
  *
- * Notifications already generated keep the old details on purpose — they are a
+ * Notifications already generated keep the old details on purpose. They are a
  * log of what was actually sent, not a view of the order.
  */
 export async function updateOrderDetails(order, form, actor) {
