@@ -76,16 +76,17 @@ create table if not exists public.technicians (
 alter table public.technicians add column if not exists phone  text;
 alter table public.technicians add column if not exists branch text;
 
--- The whole roster shares one demo handset so a reviewer can tap a generated
--- wa.me link and actually receive the job brief. Real dispatch needs real
--- numbers here.
+-- The seeded roster carries no numbers on purpose: this file is public, and a
+-- technician without one still produces a working wa.me link that opens with
+-- the job brief pre-filled for the sender to address. Fill these in before the
+-- roster is used for real dispatch — re-running this file leaves them alone.
 insert into public.technicians (name, phone, branch) values
-  ('Ali',    '601155069631', 'Shah Alam'),
-  ('John',   '601155069631', 'Petaling Jaya'),
-  ('Bala',   '601155069631', 'Cheras'),
-  ('Yusoff', '601155069631', 'Klang')
+  ('Ali',    null, 'Shah Alam'),
+  ('John',   null, 'Petaling Jaya'),
+  ('Bala',   null, 'Cheras'),
+  ('Yusoff', null, 'Klang')
 on conflict (name) do update
-  set phone  = excluded.phone,
+  set phone  = coalesce(public.technicians.phone, excluded.phone),
       branch = coalesce(public.technicians.branch, excluded.branch);
 
 

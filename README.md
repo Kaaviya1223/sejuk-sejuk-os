@@ -285,6 +285,13 @@ WhatsApp draft stays editable, so they should read it first. Every generated
 message is written to `notifications`, so the history is auditable even though
 sending is a manual tap.
 
+The seeded technician roster carries no phone numbers, so this repo and its live
+demo publish nobody's handset. A number is not needed to see the feature work: a
+`wa.me` link without a recipient still opens WhatsApp with the brief pre-filled
+and asks who to send it to, so you can address it to yourself and receive the
+real thing. To watch a brief land automatically instead, set `VITE_DEMO_PHONE`
+in a local `.env` and the whole roster points at that handset.
+
 The top bar carries a feed of everything generated, in two states, because a
 deep link only supports two. Opening the link is observable, so that is recorded
 as opened. Whether the message actually went is not observable at all: the

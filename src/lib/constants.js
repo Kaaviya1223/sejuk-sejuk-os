@@ -55,12 +55,14 @@ export const BRANCHES = ['Shah Alam', 'Petaling Jaya', 'Cheras', 'Klang', 'Serem
 /**
  * Fallback roster, used when the `technicians` table is unreachable.
  *
- * Every technician carries the same demo number on purpose: WhatsApp delivery
- * is a manual `wa.me` tap, so pointing the whole roster at one handset means a
- * reviewer can send a job brief and actually receive it. Swap these for real
- * numbers before this is used for real dispatch.
+ * The roster ships with no number. WhatsApp delivery is a manual `wa.me` tap,
+ * and an unset number still opens WhatsApp with the job brief pre-filled for
+ * the sender to address — so the link demonstrates itself without a real
+ * handset living in a public repo. Set `VITE_DEMO_PHONE` in a local `.env` to
+ * point the whole roster at one number and receive the briefs while testing.
+ * Real dispatch reads per-technician numbers from the `technicians` table.
  */
-export const DEMO_PHONE = '601155069631'
+export const DEMO_PHONE = import.meta.env.VITE_DEMO_PHONE || ''
 
 export const FALLBACK_TECHNICIANS = [
   { name: 'Ali', phone: DEMO_PHONE, branch: 'Shah Alam' },
