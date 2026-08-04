@@ -20,9 +20,16 @@ environment variables before the first deploy:
 | `VITE_SUPABASE_ANON_KEY` | the publishable key | browser and functions |
 | `GEMINI_API_KEY` | Google AI Studio key | functions only |
 
-`GEMINI_MODEL` and `MANAGER_WHATSAPP` are optional. The Gemini key has no
-`VITE_` prefix on purpose: anything prefixed that way is inlined into the
-JavaScript bundle and readable by every visitor.
+Three more are optional. `GEMINI_MODEL` is tried ahead of the built-in
+candidate list rather than replacing it, so naming a model changes the
+preference, not the fallback behaviour described in
+[Limitations of the AI implementation](#limitations-of-the-ai-implementation).
+`MANAGER_WHATSAPP` addresses the completion notice, and is left unset here —
+see [Demo data and privacy](#demo-data-and-privacy). `VITE_DEMO_PHONE` belongs
+in a local `.env` and never in deployment settings.
+
+The Gemini key has no `VITE_` prefix on purpose: anything prefixed that way is
+inlined into the JavaScript bundle and readable by every visitor.
 
 **What is covered:** all three modules, order confirmation and the WhatsApp job
 brief, payment capture, the manager review queue, the KPI dashboard, the AI
@@ -80,6 +87,23 @@ The order list has search across order number, customer, phone and address, and
 filter chips per status that carry their own counts. It is a table on desktop
 and cards on mobile. Opening an order shows the full record, its files, its
 WhatsApp history and its audit trail.
+
+Intake details can be corrected afterwards. **Edit details** on an open order
+covers customer name, phone, address, problem reported, service type, quoted
+price, branch and admin notes — admin only, and closed once the order is
+Closed. Mistakes at intake are ordinary, a quote typed as 350 when it was
+agreed at 3500 more so than a wrong phone number, and the alternative was
+deleting the order and re-entering it, which discarded its files, its messages
+and its trail.
+
+Only fields that actually changed are written, and each one is recorded in the
+audit trail with the value it replaced. That matters most for the quote: it
+drives the variance a manager reviews and the totals on the Performance page,
+so an edit after completion moves reported figures, and the trail is what makes
+that legible afterwards. The form says so before the edit rather than leaving
+it to be discovered. Notifications already generated keep the details they were
+sent with — they are a log of what the customer actually received, not a view
+of the order.
 
 ### Module 2: Technician Portal
 
@@ -458,6 +482,11 @@ database is open to anyone holding the URL.
   enforcement belongs in RLS policies or Postgres functions.
 - **The storage bucket is public.** Anyone with the URL can read an uploaded
   photo. Signed URLs would fix that.
+- **Corrections stop at the intake fields.** Work done, technician remarks and
+  the payment record cannot be edited after completion, so fixing a mistyped
+  payment amount still means sending the job back to the technician. Those
+  fields are the technician's account of what happened on site, and an admin
+  quietly rewriting them is a different feature with different rules.
 - **No optimistic concurrency.** Two people editing one order is last write
   wins.
 - **Uploads are not resumable** and there is no image compression, which matters
