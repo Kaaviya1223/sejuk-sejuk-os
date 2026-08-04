@@ -77,8 +77,8 @@ export function fileSize(bytes) {
 }
 
 /**
- * The same number, formatted for a human: `01155069631` and `60115569631`
- * both render as `+60 11-5506 9631`. Whatever a record happens to store, the
+ * The same number, formatted for a human: `01123456789` and `601123456789`
+ * both render as `+60 11-2345 6789`. Whatever a record happens to store, the
  * UI shows the international form the message will actually be sent to —
  * prefixing a raw local number with "+" reads as a different number.
  */
