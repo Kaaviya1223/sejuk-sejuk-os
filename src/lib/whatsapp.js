@@ -99,6 +99,18 @@ export function deepLink(phone, message) {
 }
 
 /**
+ * The human name for a stored template key.
+ *
+ * The column holds `manager_job_done` because a log should be greppable. Staff
+ * reading an order's history should see what the message was.
+ */
+export function templateLabel(id) {
+  if (TEMPLATES[id]?.label) return TEMPLATES[id].label
+  const words = String(id ?? '').replace(/[._]/g, ' ').trim()
+  return words ? words[0].toUpperCase() + words.slice(1) : 'Message'
+}
+
+/**
  * Renders one template into a ready-to-send notification record.
  * `recipient` supplies the phone/name that isn't on the order itself
  * (technician and manager numbers come from the roster / settings).

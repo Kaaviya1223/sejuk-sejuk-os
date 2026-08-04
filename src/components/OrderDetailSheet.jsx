@@ -4,6 +4,7 @@ import { FileText, Paperclip, Send } from 'lucide-react'
 import { Alert, Button, Pill, Select, Sheet, Textarea } from './ui.jsx'
 import StatusBadge from './StatusBadge.jsx'
 import WhatsAppPreview from './WhatsAppPreview.jsx'
+import { templateLabel } from '../lib/whatsapp.js'
 import { useSession } from '../context/session.js'
 import { allowedTransitions } from '../lib/constants.js'
 import { dateTime, displayPhone, fileSize, money, relativeTime } from '../lib/format.js'
@@ -327,9 +328,10 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
               <div key={n.id ?? n.deep_link}>
                 <p className="mb-1 flex items-center gap-1.5 text-[11px] text-slate">
                   <Send size={11} />
-                  {n.template} · {relativeTime(n.created_at)}
+                  {templateLabel(n.template)} · {relativeTime(n.created_at)}
                 </p>
-                <WhatsAppPreview notification={n} />
+                {/* The heading above already names it, so the card does not. */}
+                <WhatsAppPreview notification={n} showLabel={false} />
               </div>
             ))}
           </div>

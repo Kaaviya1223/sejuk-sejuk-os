@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Bell, Check, ExternalLink, MessageCircle } from 'lucide-react'
 
 import { listNotifications, markNotificationOpened, markNotificationSent } from '../lib/orders.js'
-import { TEMPLATES } from '../lib/whatsapp.js'
+import { templateLabel } from '../lib/whatsapp.js'
 import { displayPhone, relativeTime } from '../lib/format.js'
 
 /**
@@ -110,7 +110,7 @@ function NotificationBell() {
                           </span>
                         </p>
                         <p className="truncate text-[11px] text-slate">
-                          {TEMPLATES[n.template]?.label ?? n.template} · {n.order_no}
+                          {templateLabel(n.template)} · {n.order_no}
                         </p>
                         <p className="mt-0.5 text-[11px] text-slate-light">
                           {n.recipient_phone ? `${displayPhone(n.recipient_phone)} · ` : ''}

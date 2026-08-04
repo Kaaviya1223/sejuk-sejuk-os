@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle, Check, ExternalLink, MessageCircle } from 'lucide-react'
 import { Button } from './ui.jsx'
-import { TEMPLATES } from '../lib/whatsapp.js'
+import { templateLabel } from '../lib/whatsapp.js'
 import { displayPhone } from '../lib/format.js'
 import { markNotificationOpened, markNotificationSent } from '../lib/orders.js'
 
@@ -15,14 +15,14 @@ import { markNotificationOpened, markNotificationSent } from '../lib/orders.js'
  * is what the recipient will see, and the reader is proof-reading a message,
  * not scanning a field.
  */
-function WhatsAppPreview({ notification, compact = false, step }) {
+function WhatsAppPreview({ notification, compact = false, step, showLabel = true }) {
   // Opening the link is observable. Whether it was sent is not, so it is asked.
   const [opened, setOpened] = useState(Boolean(notification?.opened_at))
   const [sent, setSent] = useState(Boolean(notification?.sent_at))
 
   if (!notification) return null
 
-  const label = TEMPLATES[notification.template]?.label
+  const label = showLabel ? templateLabel(notification.template) : null
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-line bg-surface">
