@@ -6,7 +6,7 @@ An admin raises a service order. A technician does the job in the field and
 records what happened. The office gets back the evidence, the final amount and a
 traceable history.
 
-**Repo:** https://github.com/Kaaviya1223/utopia-ops-assessment
+**Repo:** https://github.com/Kaaviya1223/sejuk-sejuk-os
 **Live demo:** https://utopia-ops-assessment.vercel.app
 
 **What is covered:** all three modules, plus the KPI dashboard, the AI Operations
