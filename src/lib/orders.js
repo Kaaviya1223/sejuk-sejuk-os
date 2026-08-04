@@ -326,43 +326,80 @@ export async function assignTechnician(order, technicianName, actor) {
   return data
 }
 
-/** The intake fields an admin can correct once the order exists. */
-const EDITABLE_DETAILS = ['customer_name', 'phone', 'address']
+/**
+ * The intake fields an admin can correct once the order exists.
+ *
+ * Everything here was typed by the office at intake. `work_done`, `remarks`
+ * and the payment fields are the technician's record of what happened on site
+ * and belong to the completion flow; `assigned_technician` has its own control
+ * because reassigning sends a WhatsApp brief.
+ */
+const EDITABLE_DETAILS = [
+  'customer_name',
+  'phone',
+  'address',
+  'problem_description',
+  'service_type',
+  'quoted_price',
+  'branch',
+  'admin_notes',
+]
+
+/** Postgres hands `numeric` back as a number; a form hands it back as a string. */
+function unchanged(before, after) {
+  if (before == null && after == null) return true
+  if (before == null || after == null) return false
+  if (typeof before === 'number' || typeof after === 'number') return Number(before) === Number(after)
+  return before === after
+}
 
 /**
- * Corrects the customer details on an existing order.
+ * Corrects the details on an existing order.
  *
- * Intake typos are ordinary — a transposed phone number, the wrong unit on a
- * block of flats — and until this existed the only remedy was deleting the
- * order and re-entering it, which threw away its files, its messages and its
- * trail. Correcting in place keeps all three.
+ * Intake mistakes are ordinary — a transposed phone number, the wrong unit on
+ * a block of flats, a quote entered as 350 when it was agreed at 3500 — and
+ * until this existed the only remedy was deleting the order and re-entering
+ * it, which threw away its files, its messages and its trail. Correcting in
+ * place keeps all three.
  *
  * Only changed fields are written, and the audit entry carries the previous
  * value of each, so a correction is visible in the trail rather than silently
- * replacing what the record used to say. Notifications already generated keep
- * the old details on purpose: they are a log of what was actually sent.
+ * replacing what the record used to say. That matters most for `quoted_price`:
+ * it drives the variance a manager reviews and the figures on the dashboard,
+ * so an edit after completion moves reported numbers, and the trail is what
+ * makes that legible afterwards.
+ *
+ * Notifications already generated keep the old details on purpose — they are a
+ * log of what was actually sent, not a view of the order.
  */
 export async function updateOrderDetails(order, form, actor) {
   const patch = {
     customer_name: form.customer_name?.trim() || '',
     phone: form.phone?.trim() || null,
     address: form.address?.trim() || null,
+    problem_description: form.problem_description?.trim() || null,
+    service_type: form.service_type || null,
+    quoted_price:
+      form.quoted_price === '' || form.quoted_price == null ? null : Number(form.quoted_price),
+    branch: form.branch || null,
+    admin_notes: form.admin_notes?.trim() || null,
   }
 
   if (!patch.customer_name) throw new Error('Customer name cannot be empty.')
+  if (patch.quoted_price != null && !Number.isFinite(patch.quoted_price)) {
+    throw new Error('Quoted price must be a number.')
+  }
 
-  const changed = EDITABLE_DETAILS.filter((key) => (patch[key] ?? null) !== (order[key] ?? null))
+  const changed = EDITABLE_DETAILS.filter((key) => !unchanged(order[key] ?? null, patch[key] ?? null))
   // Saving without touching anything should not write a row or log an edit.
   if (!changed.length) return order
 
-  const { data, error } = await supabase
-    .from('orders')
-    .update(Object.fromEntries(changed.map((key) => [key, patch[key]])))
-    .eq('id', order.id)
-    .select()
-    .single()
-
-  if (error) throw error
+  // `branch` arrived with this build's migration, so an unmigrated database
+  // rejects it. Dropping just that column beats failing the whole correction.
+  const { data, dropped } = await writeWithSchemaFallback(
+    Object.fromEntries(changed.map((key) => [key, patch[key]])),
+    (body) => supabase.from('orders').update(body).eq('id', order.id).select().single(),
+  )
 
   await logAudit({
     order_id: order.id,
@@ -371,11 +408,13 @@ export async function updateOrderDetails(order, form, actor) {
     actor_role: actor.role,
     actor_name: actor.name,
     detail: Object.fromEntries(
-      changed.map((key) => [key, { from: order[key] ?? null, to: patch[key] }]),
+      changed
+        .filter((key) => !dropped.includes(key))
+        .map((key) => [key, { from: order[key] ?? null, to: patch[key] }]),
     ),
   })
 
-  return data
+  return { ...data, _warning: droppedFieldsMessage(dropped) }
 }
 
 export async function updateStatus(order, toStatus, actor, extra = {}) {

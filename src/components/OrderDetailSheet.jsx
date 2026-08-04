@@ -6,10 +6,11 @@ import StatusBadge from './StatusBadge.jsx'
 import WhatsAppPreview from './WhatsAppPreview.jsx'
 import { templateLabel } from '../lib/whatsapp.js'
 import { useSession } from '../context/session.js'
-import { allowedTransitions } from '../lib/constants.js'
+import { allowedTransitions, BRANCHES, SERVICE_TYPES } from '../lib/constants.js'
 import { dateTime, displayPhone, fileSize, money, relativeTime } from '../lib/format.js'
 import {
   assignTechnician,
+  isCompleted,
   listAudit,
   listJobFiles,
   listNotifications,
@@ -68,7 +69,10 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
   const [error, setError] = useState(null)
   const [reviewNote, setReviewNote] = useState('')
   const [editing, setEditing] = useState(false)
-  const [details, setDetails] = useState({ customer_name: '', phone: '', address: '' })
+  const [details, setDetails] = useState({})
+  const [notice, setNotice] = useState(null)
+
+  const set = (key) => (event) => setDetails((current) => ({ ...current, [key]: event.target.value }))
 
   const refresh = useCallback(async () => {
     if (!order?.id) return
@@ -88,6 +92,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
       setError(null)
       setReviewNote('')
       setEditing(false)
+      setNotice(null)
       refresh()
     }
   }, [open, refresh])
@@ -133,8 +138,14 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
       customer_name: order.customer_name ?? '',
       phone: order.phone ?? '',
       address: order.address ?? '',
+      problem_description: order.problem_description ?? '',
+      service_type: order.service_type ?? SERVICE_TYPES[0],
+      quoted_price: order.quoted_price ?? '',
+      branch: order.branch ?? '',
+      admin_notes: order.admin_notes ?? '',
     })
     setError(null)
+    setNotice(null)
     setEditing(true)
   }
 
@@ -145,6 +156,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
     try {
       const updated = await updateOrderDetails(order, details, actor)
       onChanged?.(updated)
+      setNotice(updated._warning ?? null)
       setEditing(false)
       await refresh()
     } catch (err) {
@@ -205,9 +217,24 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
             <Pill tone="warning">Rescheduled ×{order.reschedule_count}</Pill>
           )}
           {variance > 0 && <Pill tone="warning">Over quote +{money(variance)}</Pill>}
+          {canEditDetails && !editing && (
+            <button
+              type="button"
+              onClick={startEditing}
+              className="ml-auto flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+            >
+              <Pencil size={12} />
+              Edit details
+            </button>
+          )}
         </div>
 
         {error && <Alert tone="error">{error}</Alert>}
+        {notice && (
+          <Alert tone="warning" onDismiss={() => setNotice(null)}>
+            {notice}
+          </Alert>
+        )}
 
         <div className="flex gap-1 border-b border-slate-line">
           {TABS.map((t) => (
@@ -234,14 +261,14 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
             {editing ? (
               <section>
                 <h3 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-wide text-brand">
-                  Customer
+                  Correct order details
                 </h3>
                 <form onSubmit={saveDetails} className="space-y-3">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Field label="Customer name" required>
                       <Input
                         value={details.customer_name}
-                        onChange={(e) => setDetails({ ...details, customer_name: e.target.value })}
+                        onChange={set('customer_name')}
                         required
                         autoFocus
                       />
@@ -249,25 +276,79 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                     <Field label="Phone" hint="For WhatsApp updates">
                       <Input
                         value={details.phone}
-                        onChange={(e) => setDetails({ ...details, phone: e.target.value })}
+                        onChange={set('phone')}
                         inputMode="tel"
                         placeholder="012-345 6789"
                         className="tabular-nums"
                       />
                     </Field>
                   </div>
+
                   <Field label="Address">
+                    <Textarea rows={2} value={details.address} onChange={set('address')} />
+                  </Field>
+
+                  <Field label="Problem reported">
                     <Textarea
                       rows={2}
-                      value={details.address}
-                      onChange={(e) => setDetails({ ...details, address: e.target.value })}
+                      value={details.problem_description}
+                      onChange={set('problem_description')}
                     />
                   </Field>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Service type">
+                      <Select value={details.service_type} onChange={set('service_type')}>
+                        {SERVICE_TYPES.map((s) => (
+                          <option key={s}>{s}</option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <Field label="Quoted price" hint="RM">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={details.quoted_price}
+                        onChange={set('quoted_price')}
+                        className="tabular-nums"
+                        placeholder="0.00"
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Branch">
+                      <Select value={details.branch} onChange={set('branch')}>
+                        <option value="">Unassigned</option>
+                        {BRANCHES.map((b) => (
+                          <option key={b}>{b}</option>
+                        ))}
+                      </Select>
+                    </Field>
+                  </div>
+
+                  <Field label="Admin notes">
+                    <Textarea rows={2} value={details.admin_notes} onChange={set('admin_notes')} />
+                  </Field>
+
+                  {/* Re-quoting a finished job silently moves the variance a
+                      manager reviews and the totals on the dashboard. Say so
+                      before it happens, not in the trail afterwards. */}
+                  {isCompleted(order) && (
+                    <Alert tone="warning">
+                      This job is already completed. Changing the quote moves its variance and the
+                      figures on the dashboard.
+                    </Alert>
+                  )}
+
                   {/* Said plainly, because someone correcting a wrong number
                       will reasonably expect the messages to follow. */}
                   <p className="text-xs text-slate">
-                    Messages already sent keep the details they were sent with.
+                    Messages already sent keep the details they were sent with. Every change is
+                    recorded in the trail with its previous value.
                   </p>
+
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" type="button" onClick={() => setEditing(false)}>
                       Cancel
@@ -279,35 +360,23 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
                 </form>
               </section>
             ) : (
-              <Group
-                title="Customer"
-                action={
-                  canEditDetails && (
-                    <button
-                      type="button"
-                      onClick={startEditing}
-                      className="flex items-center gap-1 text-[11px] font-medium text-brand hover:underline"
-                    >
-                      <Pencil size={11} />
-                      Edit
-                    </button>
-                  )
-                }
-              >
-                <Detail label="Name" value={order.customer_name} />
-                <Detail label="Phone" value={displayPhone(order.phone)} numeric />
-                <Detail label="Address" value={order.address} span />
-              </Group>
-            )}
+              <>
+                <Group title="Customer">
+                  <Detail label="Name" value={order.customer_name} />
+                  <Detail label="Phone" value={displayPhone(order.phone)} numeric />
+                  <Detail label="Address" value={order.address} span />
+                </Group>
 
-            <Group title="The job">
-              <Detail label="Problem reported" value={order.problem_description} span />
-              <Detail label="Service type" value={order.service_type} />
-              <Detail label="Assigned technician" value={order.assigned_technician} />
-              <Detail label="Work done" value={order.work_done} span />
-              <Detail label="Technician remarks" value={order.remarks} span />
-              <Detail label="Admin notes" value={order.admin_notes} span />
-            </Group>
+                <Group title="The job">
+                  <Detail label="Problem reported" value={order.problem_description} span />
+                  <Detail label="Service type" value={order.service_type} />
+                  <Detail label="Assigned technician" value={order.assigned_technician} />
+                  <Detail label="Work done" value={order.work_done} span />
+                  <Detail label="Technician remarks" value={order.remarks} span />
+                  <Detail label="Admin notes" value={order.admin_notes} span />
+                </Group>
+              </>
+            )}
 
             {/* The money reads as a sum, so it is laid out as one. */}
             <Group title="Money">
@@ -475,7 +544,7 @@ function OrderDetailSheet({ order, open, onClose, onChanged }) {
  * so an order with no review yet doesn't show a "History" heading over four
  * dashes.
  */
-function Group({ title, children, action = null }) {
+function Group({ title, children }) {
   const filled = Children.toArray(children).filter((child) => {
     if (!isValidElement(child)) return Boolean(child)
     // Non-Detail children (the money row) carry their own emptiness rules.
@@ -485,12 +554,9 @@ function Group({ title, children, action = null }) {
 
   return (
     <section>
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <h3 className="font-display text-[11px] font-semibold uppercase tracking-wide text-brand">
-          {title}
-        </h3>
-        {action}
-      </div>
+      <h3 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-wide text-brand">
+        {title}
+      </h3>
       <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">{filled}</dl>
     </section>
   )
