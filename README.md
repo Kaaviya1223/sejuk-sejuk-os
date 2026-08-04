@@ -6,7 +6,7 @@ happened, and the office gets back the evidence, the final amount and a
 traceable history.
 
 **Repo:** https://github.com/Kaaviya1223/utopia-ops-assessment
-**Live demo:** _add your Vercel URL here_
+**Live demo:** https://utopia-ops-assessment.vercel.app
 
 ### Deploying
 
