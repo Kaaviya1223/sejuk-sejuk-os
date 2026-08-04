@@ -424,8 +424,9 @@ answer to a different question is worse than a decline.
 - The quoted price is agreed up front, so final amount is quote plus extras.
   There is no discount or line-item path.
 - One technician per order. No crews and no job splitting.
-- In the demo data, every phone number points at one handset, so a reviewer can
-  tap a generated link and actually receive the message.
+- The demo data carries no working phone numbers, so a generated link opens
+  WhatsApp with the message pre-filled and asks the sender who to send it to.
+  See [Demo data and privacy](#demo-data-and-privacy).
 
 **Challenges**
 
