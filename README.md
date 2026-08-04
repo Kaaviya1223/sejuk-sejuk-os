@@ -148,19 +148,45 @@ Two affordances exist specifically for field use:
 
 **Start job** moves the order to In Progress.
 
-**Complete job** collects the work done, which is the only required field, plus
-extra charges, remarks, and up to six photos, videos or PDFs.
+**Complete job** opens a form with three parts.
 
-Four things are never typed, because the app already knows them: order number,
-technician name, timestamp and final amount. The final amount updates as extra
-charges are entered and stays visible in the footer, so the technician can see
-the total before they save it.
+**1. What was done.** The technician enters:
 
-**Payment capture** (amount, method, receipt photo, notes) starts collapsed. Not
-every job takes payment on site, and the common path should not scroll past
-fields most jobs leave empty.
+| Field | Required |
+| --- | --- |
+| Work done | Yes |
+| Extra charges | No |
+| Remarks | No |
+| Photos, videos or PDFs (up to six) | No |
 
-Completing a job produces a customer feedback message and a manager notice.
+**2. What the app fills in.** Four values are never typed, because the system
+already knows them: order number, technician name, timestamp and final amount.
+
+The final amount recalculates as extra charges are entered and stays visible in
+the footer, so the technician sees the total before saving rather than after.
+
+**3. Payment, if any was taken.** This is a record of a payment that already
+happened. The app does not process one, and there is no payment gateway.
+
+A **Record payment received** button opens four more fields:
+
+| Field | Notes |
+| --- | --- |
+| Amount | What the customer actually handed over |
+| Method | Cash, Bank Transfer, DuitNow QR, Card or Unpaid |
+| Receipt photo | Stored with the job's files, tagged as a receipt |
+| Payment notes | Optional |
+
+That section starts collapsed, because not every job is paid on site. Some are
+invoiced to the office, some sit under a maintenance contract, and some the
+customer settles later. Leaving the fields open would put four empty inputs in
+front of every technician finishing an unpaid job, on a phone screen where
+scrolling costs the most.
+
+Once saved, the amount and method appear on the order for the reviewing manager
+and feed the value collected figure on the Performance page.
+
+Completing a job also produces a customer feedback message and a manager notice.
 
 #### Access is scoped by the query, not the interface
 
