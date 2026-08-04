@@ -1,41 +1,30 @@
 # Sejuk Sejuk Ops
 
-An internal operations system for an air-conditioner service company. An admin
-raises a service order, a technician does the job in the field and records what
-happened, and the office gets back the evidence, the final amount and a
+An internal operations system for an air-conditioner service company.
+
+An admin raises a service order. A technician does the job in the field and
+records what happened. The office gets back the evidence, the final amount and a
 traceable history.
 
 **Repo:** https://github.com/Kaaviya1223/utopia-ops-assessment
 **Live demo:** https://utopia-ops-assessment.vercel.app
 
-### Deploying
+**What is covered:** all three modules, plus the KPI dashboard, the AI Operations
+Query Window and the AI Workflow Supervisor. AI document understanding is not
+built, and the reason is in [What is not built](#what-is-not-built).
 
-Import the repo on Vercel. It detects Vite, builds to `dist`, and turns each
-file in `api/` into a serverless function with no extra config. Set three
-environment variables before the first deploy:
+### Contents
 
-| Variable | Value | Used by |
-| --- | --- | --- |
-| `VITE_SUPABASE_URL` | your project URL | browser and functions |
-| `VITE_SUPABASE_ANON_KEY` | the publishable key | browser and functions |
-| `GEMINI_API_KEY` | Google AI Studio key | functions only |
-
-Three more are optional. `GEMINI_MODEL` is tried ahead of the built-in
-candidate list rather than replacing it, so naming a model changes the
-preference, not the fallback behaviour described in
-[Limitations of the AI implementation](#limitations-of-the-ai-implementation).
-`MANAGER_WHATSAPP` addresses the completion notice, and is left unset here; see
-[Demo data and privacy](#demo-data-and-privacy). `VITE_DEMO_PHONE` belongs in a
-local `.env` and never in deployment settings.
-
-The Gemini key has no `VITE_` prefix on purpose: anything prefixed that way is
-inlined into the JavaScript bundle and readable by every visitor.
-
-**What is covered:** all three modules, order confirmation and the WhatsApp job
-brief, payment capture, the manager review queue, the KPI dashboard, the AI
-Operations Query Window and the AI workflow supervisor. AI document
-understanding is not built, and the reason is in
-[What is not built](#what-is-not-built).
+1. [Quick start](#quick-start)
+2. [What I built](#what-i-built)
+3. [Tech stack](#tech-stack)
+4. [Architecture decisions](#architecture-decisions)
+5. [WhatsApp notifications](#whatsapp-notifications)
+6. [AI integration](#ai-integration)
+7. [Demo data and privacy](#demo-data-and-privacy)
+8. [Limitations](#limitations)
+9. [What is not built](#what-is-not-built)
+10. [Self-assessment](#self-assessment)
 
 ---
 
@@ -48,25 +37,48 @@ npm run dev               # http://localhost:5173
 ```
 
 Use `npm run dev`, not `npm run preview`. The `api/` folder holds serverless
-functions, and `preview` only serves the built static files, so the assistant
-and the supervisor will report that their endpoint is missing.
+functions. `preview` only serves the built static files, so the assistant and
+the supervisor will report that their endpoint is missing.
 
 ### Run the database migration once
 
 The app connects with a Supabase publishable key. That key can read and write
 rows but cannot create tables or storage buckets, so the schema is a manual
-step. Open the Supabase dashboard, go to SQL Editor, paste
-[`supabase/schema.sql`](supabase/schema.sql) and run it. It is safe to run more
-than once.
+step.
 
-It creates the `job_files`, `audit_log`, `notifications` and `technicians`
-tables, adds the newer columns to `orders`, creates the `job-files` storage
-bucket, and adds a `CHECK` constraint so an invalid status can never be stored.
+Open the Supabase dashboard, go to SQL Editor, paste
+[`supabase/schema.sql`](supabase/schema.sql) and run it. It is safe to run more
+than once. It creates the `job_files`, `audit_log`, `notifications` and
+`technicians` tables, adds the newer columns to `orders`, creates the
+`job-files` storage bucket, and adds a `CHECK` constraint so an invalid status
+can never be stored.
 
 The app still works before you run it. Writes retry without any column the
-database does not have yet, and a banner names what is missing. Orders can be
-created and completed straight away, and the extra fields start persisting once
-the migration lands, with no code change.
+database does not have yet, and a banner names what is missing.
+
+### Deploying
+
+Import the repo on Vercel. It detects Vite, builds to `dist`, and turns each
+file in `api/` into a serverless function with no extra config.
+
+Set three environment variables before the first deploy:
+
+| Variable | Value | Used by |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | your project URL | browser and functions |
+| `VITE_SUPABASE_ANON_KEY` | the publishable key | browser and functions |
+| `GEMINI_API_KEY` | Google AI Studio key | functions only |
+
+Three more are optional:
+
+| Variable | What it does |
+| --- | --- |
+| `GEMINI_MODEL` | Tried first, ahead of the built-in model list. It sets the preference and keeps the fallback. |
+| `MANAGER_WHATSAPP` | Addresses the completion notice. Left unset here, see [Demo data and privacy](#demo-data-and-privacy). |
+| `VITE_DEMO_PHONE` | Points the technician roster at one handset for local testing. Local `.env` only. |
+
+The Gemini key has no `VITE_` prefix on purpose. Anything prefixed that way is
+inlined into the JavaScript bundle and readable by every visitor.
 
 ---
 
@@ -74,36 +86,37 @@ the migration lands, with no code change.
 
 ### Module 1: Admin Portal
 
-Create an order with an auto-generated order number, customer name, phone,
+**Creating an order.** Auto-generated order number, customer name, phone,
 address, problem description, service type, quoted price, assigned technician
 and admin notes, plus a branch and a scheduled date.
 
 After saving, a confirmation panel shows the new order number, customer, price
-and resulting status. Assigning a technician builds a WhatsApp job brief with
-the address, phone, issue, quote and office notes, and renders it as a `wa.me`
-link.
+and resulting status. Assigning a technician builds a WhatsApp job brief and
+renders it as a `wa.me` link.
 
-The order list has search across order number, customer, phone and address, and
-filter chips per status that carry their own counts. It is a table on desktop
-and cards on mobile. Opening an order shows the full record, its files, its
-WhatsApp history and its audit trail.
+**Finding an order.** Search across order number, customer, phone and address.
+Filter chips per status, each carrying its own count. A table on desktop, cards
+on mobile. Opening an order shows the full record, its files, its WhatsApp
+history and its audit trail.
 
-Intake details can be corrected afterwards. **Edit details** on an open order
-covers customer name, phone, address, problem reported, service type, quoted
-price, branch and admin notes. It is admin only, and stops once the order is
-Closed. Mistakes at intake are ordinary, a quote typed as 350 when it was
-agreed at 3500 more so than a wrong phone number, and the alternative was
-deleting the order and re-entering it, which discarded its files, its messages
-and its trail.
+**Correcting an order.** Intake mistakes are ordinary. A quote typed as 350 when
+it was agreed at 3500 matters more than a wrong phone number, and the only
+alternative was deleting the order and re-entering it, which threw away its
+files, its messages and its trail.
 
-Only fields that actually changed are written, and each one is recorded in the
-audit trail with the value it replaced. That matters most for the quote: it
-drives the variance a manager reviews and the totals on the Performance page,
-so an edit after completion moves reported figures, and the trail is what makes
-that legible afterwards. The form says so before the edit rather than leaving
-it to be discovered. Notifications already generated keep the details they were
-sent with. They are a log of what the customer actually received, not a view of
-the order.
+**Edit details** covers customer name, phone, address, problem reported, service
+type, quoted price, branch and admin notes. It is admin only, and stops once the
+order is Closed.
+
+Two rules make it safe:
+
+- Only fields that actually changed are written, and each one is recorded in the
+  audit trail with the value it replaced. This matters most for the quote, since
+  it drives the variance a manager reviews and the totals on the Performance
+  page. An edit after completion moves those figures, and the trail is what
+  makes that clear afterwards. The form warns before the edit, not after.
+- Messages already generated keep the details they were sent with. They are a
+  log of what the customer actually received, not a view of the order.
 
 ### Module 2: Technician Portal
 
@@ -112,60 +125,63 @@ action bar with safe-area padding.
 
 Only jobs assigned to the signed-in technician are fetched at all. The rule
 "only the assigned technician may complete a job" is enforced by never loading
-anyone else's work rather than by hiding a button.
+anyone else's work, rather than by hiding a button.
 
-Job cards tap through to Google Maps and to the phone dialler. Start job moves
-the order to In Progress. Complete job collects the work done (the only required
-field), extra charges, remarks, and up to six photos, videos or PDFs with camera
-capture on mobile. Order number, technician name, timestamp and final amount are
-derived rather than typed, and the running final amount stays visible in the
-footer.
+- Job cards tap through to Google Maps and to the phone dialler.
+- **Start job** moves the order to In Progress.
+- **Complete job** collects work done (the only required field), extra charges,
+  remarks, and up to six photos, videos or PDFs with camera capture on mobile.
+- Order number, technician name, timestamp and final amount are derived rather
+  than typed. The running final amount stays visible in the footer.
+- Payment capture (amount, method, receipt photo, notes) sits collapsed by
+  default, so the common path stays short.
 
-Payment capture (amount, method, receipt photo, notes) sits collapsed by default
-so the common path stays short, and completing a job produces a customer
-feedback message and a manager notice.
+Completing a job produces a customer feedback message and a manager notice.
 
 ### Module 3: WhatsApp notification trigger
 
 [`api/notify.js`](api/notify.js) is a serverless endpoint. Give it an order id
-and it re-reads the order and checks `status = 'Job Done'` itself instead of
-trusting the caller, so a client cannot fire "your job is complete" at a
-customer whose job is still open. It refuses with a 409 naming the actual
-status.
+and it re-reads the order and checks `status = 'Job Done'` itself, instead of
+trusting the caller. A client cannot fire "your job is complete" at a customer
+whose job is still open. It refuses with a 409 naming the actual status.
 
-Messages come from the same template module the UI previews from, so what staff
-read on screen is what the endpoint logs. A second call for the same order
-returns what was already sent rather than notifying twice, unless `force` is
-passed. Job completion calls this endpoint and falls back to building the
-messages in the browser if it is unreachable.
+- Messages come from the same template module the UI previews from, so what
+  staff read on screen is what the endpoint logs.
+- A second call for the same order returns what was already sent rather than
+  notifying twice, unless `force` is passed.
+- Job completion calls this endpoint, and falls back to building the messages in
+  the browser if it is unreachable.
 
 Delivery is a `wa.me` deep link, which is the method the brief names. There are
 no WhatsApp Business API credentials for this build, and getting them needs a
 verified business behind the number. Swapping one in means replacing a single
-function in [`api/notify.js`](api/notify.js) and handling its status webhooks:
-the deep link sits behind a boundary rather than spread through the app.
+function in [`api/notify.js`](api/notify.js) and handling its status webhooks.
+The deep link sits behind a boundary rather than spread through the app.
 
 ### KPI dashboard
 
 A Performance page for admins and managers: jobs completed, value collected,
 postponements, and a leaderboard ranked by jobs with value as the tie-break.
+
 Periods are this week, last week, this month and all time. Weeks start on
 Monday.
 
 ### Manager: review queue
 
 Managers own the last three steps of the workflow, so they get a page built
-around that. Everything at Job Done in one list, with the decision and its
-evidence side by side: quoted against final with the variance called out, the
-technician's write-up, and the files they attached. Approve or send back inline,
-with an optional review note.
+around that.
 
-The dashboard also opens on a different line for each role. An admin sees
-unassigned work, a manager sees work waiting for sign-off.
+Everything at Job Done in one list, with the decision and its evidence side by
+side: quoted against final with the variance called out, the technician's
+write-up, and the files they attached. Approve or send back inline, with an
+optional review note.
+
+The dashboard opens on a different line for each role. An admin sees unassigned
+work. A manager sees work waiting for sign-off.
 
 ### AI: Operations Query Window
 
-A manager-only side panel, opened with Ask in the top bar. Details are in
+A manager-only side panel, opened with **Ask** in the top bar. Details are in
 [AI integration](#ai-integration).
 
 ### AI: Workflow Supervisor
@@ -203,14 +219,16 @@ top, and the card says when that summary was written without it.
 
 ## Architecture decisions
 
-**All data access sits in `src/lib/orders.js`.** Components never touch the
-Supabase client. Workflow rules, audit writes and notification building stay in
-one file, so "what happens when a job is completed" is answered by reading one
-function.
+### All data access sits in one file
 
-**The workflow is a declared state machine.** `src/lib/constants.js` lists every
-legal transition with the roles allowed to make it and whether the actor must be
-the assigned technician:
+Components never touch the Supabase client. Workflow rules, audit writes and
+notification building stay in `src/lib/orders.js`, so "what happens when a job
+is completed" is answered by reading one function.
+
+### The workflow is a declared state machine
+
+`src/lib/constants.js` lists every legal transition, the roles allowed to make
+it, and whether the actor must be the assigned technician.
 
 ```
 New -> Assigned -> In Progress -> Job Done -> Reviewed -> Closed
@@ -218,41 +236,55 @@ New -> Assigned -> In Progress -> Job Done -> Reviewed -> Closed
 
 Work also moves backwards, because real work does. An admin can unassign or
 postpone. A manager can send a job back to the technician, or reopen one already
-reviewed. `allowedTransitions()` is the only thing that decides which buttons
-render, so a page cannot offer an illegal move. I got this wrong once: the
-review queue had its own hardcoded Reopen button that set a Job Done order to
-Job Done and quietly did nothing. Both pages now render their buttons from the
-state machine.
+reviewed.
 
-**The mock session carries an identity as well as a role.** Choosing Technician
-also chooses which technician, because "only the assigned technician may
-complete this job" means nothing without one. Every write stamps that actor onto
-the audit trail.
+`allowedTransitions()` is the only thing that decides which buttons render, so a
+page cannot offer an illegal move.
 
-**Order numbers are sequential.** The starting code generated `ORDER` plus four
-random digits, which collides about once every 40 orders once a few thousand
-exist. The highest existing number is now read and incremented, with a unique
+I got this wrong once. The review queue had its own hardcoded Reopen button that
+set a Job Done order to Job Done and quietly did nothing. Both pages now render
+their buttons from the state machine.
+
+### The mock session carries an identity, not just a role
+
+Choosing Technician also chooses which technician, because "only the assigned
+technician may complete this job" means nothing without one. Every write stamps
+that actor onto the audit trail.
+
+### Order numbers are sequential
+
+The starting code generated `ORDER` plus four random digits, which collides
+about once every 40 orders once a few thousand exist.
+
+The highest existing number is now read and incremented, with a unique
 constraint and a retry for two admins saving at the same moment.
 
-**Writes degrade instead of failing.** `writeWithSchemaFallback` retries a write
-without any column PostgREST reports as unknown, and returns what it dropped so
-the UI can say "saved, but these fields were not stored".
+### Writes degrade instead of failing
 
-**Job completion never fails on a side effect.** Upload failures are reported
-per file rather than losing the whole submission, and notification logging is
-best effort. A technician standing in a customer's hallway should not lose their
-write-up because something timed out.
+`writeWithSchemaFallback` retries a write without any column PostgREST reports
+as unknown, and returns what it dropped so the UI can say "saved, but these
+fields were not stored".
 
-**Two shells, one codebase.** Admins and managers get a sidebar layout. The
-technician role renders completely different chrome, because the brief says
-office staff are on desktops and technicians are on phones.
+### Job completion never fails on a side effect
 
-**One set of class names for light and dark.** The semantic colour tokens are
-CSS variables read through Tailwind, so around 330 colour usages across 19 files
-switch theme without a single `dark:` variant. The dark palette was chosen
-against a dark surface rather than inverted, including the chart colours.
+Upload failures are reported per file rather than losing the whole submission,
+and notification logging is best effort. A technician standing in a customer's
+hallway should not lose their write-up because something timed out.
 
-**The palette follows the brand spec.**
+### Two shells, one codebase
+
+Admins and managers get a sidebar layout. The technician role renders completely
+different chrome, because the brief says office staff are on desktops and
+technicians are on phones.
+
+### One set of class names for light and dark
+
+The semantic colour tokens are CSS variables read through Tailwind, so around
+330 colour usages across 19 files switch theme without a single `dark:` variant.
+The dark palette was chosen against a dark surface rather than inverted,
+including the chart colours.
+
+### The palette follows the brand spec
 
 | Usage | Colour | Hex |
 | --- | --- | --- |
@@ -262,17 +294,22 @@ against a dark surface rather than inverted, including the chart colours.
 | Cards and forms | White | `#FFFFFF` |
 | Main text | Dark Navy | `#263238` |
 
-Two working notes. White text on the teal measures 4.32:1, just under AA for
-body size, so filled teal buttons use a slightly darker step at 5.32:1 and the
-spec value stays for accents, icons and rules where nothing sits on top of it.
-And green is reserved for one meaning: a job that is finished. It is not part of
-the brand palette, and nothing decorative wears it.
+Two working notes:
 
-**Status colours come from one file.** `src/lib/palette.js` is read by both the
-badges and the charts, so a status never means one colour in a table and another
-in a chart. The six were checked for colour-blind separation against the card
-background, and three of them sit below 3:1 contrast, which is why every chart
-prints the count next to the swatch.
+- White text on the teal measures 4.32:1, just under AA for body size. Filled
+  teal buttons use a slightly darker step at 5.32:1, and the spec value stays
+  for accents, icons and rules where nothing sits on top of it.
+- Green is reserved for one meaning: a job that is finished. It is not part of
+  the brand palette, and nothing decorative wears it.
+
+### Status colours come from one file
+
+`src/lib/palette.js` is read by both the badges and the charts, so a status
+never means one colour in a table and another in a chart.
+
+The six were checked for colour-blind separation against the card background.
+Three of them sit below 3:1 contrast, which is why every chart prints the count
+next to the swatch.
 
 ### Project layout
 
@@ -301,31 +338,34 @@ supabase/
 
 ## WhatsApp notifications
 
-Three messages: a job brief to the technician on assignment, and a feedback
-request to the customer plus a notice to the manager on completion. Templates
-live in `src/lib/whatsapp.js` and are delivered as `wa.me` links with the text
-pre-filled.
+Three messages:
 
-The message is always shown in full next to the send button rather than hidden
-behind it. Staff are about to send this to a paying customer, and a pre-filled
-WhatsApp draft stays editable, so they should read it first. Every generated
-message is written to `notifications`, so the history is auditable even though
-sending is a manual tap.
+1. A job brief to the technician on assignment.
+2. A feedback request to the customer on completion.
+3. A notice to the manager on completion.
 
-The seeded technician roster carries no phone numbers, so this repo and its live
-demo publish nobody's handset. A number is not needed to see the feature work: a
-`wa.me` link without a recipient still opens WhatsApp with the brief pre-filled
-and asks who to send it to, so you can address it to yourself and receive the
-real thing. To watch a brief land automatically instead, set `VITE_DEMO_PHONE`
-in a local `.env` and the whole roster points at that handset.
+Templates live in `src/lib/whatsapp.js` and are delivered as `wa.me` links with
+the text pre-filled.
+
+**The message is always shown in full next to the send button**, rather than
+hidden behind it. Staff are about to send this to a paying customer, and a
+pre-filled WhatsApp draft stays editable, so they should read it first.
+
+Every generated message is written to `notifications`, so the history is
+auditable even though sending is a manual tap.
+
+### Why there are only two states
 
 The top bar carries a feed of everything generated, in two states, because a
-deep link only supports two. Opening the link is observable, so that is recorded
-as opened. Whether the message actually went is not observable at all: the
-person may edit it, or close WhatsApp without sending. So they confirm it, with
-a Mark as sent button. Nothing in the app claims delivery. The link itself stays
-available in every state, because somebody who closed WhatsApp by accident needs
-a way back to it.
+deep link only supports two.
+
+- **Opened.** Opening the link is observable, so that is recorded.
+- **Marked as sent.** Whether the message actually went is not observable at
+  all. The person may edit it, or close WhatsApp without sending. So they
+  confirm it themselves.
+
+Nothing in the app claims delivery. The link stays available in every state,
+because somebody who closed WhatsApp by accident needs a way back to it.
 
 Real sent, delivered and read receipts need the WhatsApp Business Cloud API,
 where messages go out over HTTP from the server and Meta posts status webhooks
@@ -355,19 +395,22 @@ question -> 1. classify (model)   -> intent + parameters
 
 **The model never sees the database and never produces a figure.** It turns a
 sentence into an intent, then turns computed facts into prose. A hallucination
-can change the wording of an answer but not the number in it.
+can change the wording of an answer, but not the number in it.
 
 **Retrieval is controlled.** Each intent declares its table, its exact column
 list, its date window and a row cap. Nothing selects `*`, so a customer's phone
-number cannot reach the model because somebody asked about job counts. A
-technician name returned by the classifier is only used after it matches a row
+number cannot reach the model because somebody asked about job counts.
+
+A technician name returned by the classifier is only used after it matches a row
 in `technicians`, so the model cannot invent a filter value.
 
 **Invented identifiers are checked for, not only forbidden.** Asked for a count,
 where the facts contain no order numbers at all, the model once appended
-"ORD-88902". The prompt already forbade that. So any order-number-shaped token
-in a phrased answer is now checked against the facts the model was given, and an
-answer that fails the check is thrown away for the computed one.
+"ORD-88902". The prompt already forbade that.
+
+So any order-number-shaped token in a phrased answer is now checked against the
+facts the model was given, and an answer that fails the check is thrown away for
+the computed one.
 
 ### What types of AI queries are supported
 
@@ -381,16 +424,18 @@ answer that fails the check is thrown away for the computed one.
 Periods understood: today, yesterday, this week, last week, this month, all
 time. Weeks start on Monday, and "today" means today in UTC+8.
 
-Conversation is answered by the model in its own words, with no data in the
+**Conversation** is answered by the model in its own words, with no data in the
 prompt and an instruction never to state a number, name, order or date. So "nice
 to meet you" gets a reply rather than a capability list, and it still cannot
 make a claim about the company's work.
 
-Anything else is refused before a query runs. That covers off-topic questions, a
-name that is not on the roster, an instruction to ignore its instructions, and
-questions about subjects the system does not model. "How many customers do we
-have?" is refused rather than answered with a job count, because a confident
-answer to a different question is worse than a decline.
+**Anything else is refused** before a query runs. That covers off-topic
+questions, a name that is not on the roster, an instruction to ignore its
+instructions, and questions about subjects the system does not model.
+
+"How many customers do we have?" is refused rather than answered with a job
+count, because a confident answer to a different question is worse than a
+decline.
 
 ### Limitations of the AI implementation
 
@@ -416,7 +461,7 @@ answer to a different question is worse than a decline.
 
 ## Challenges and assumptions
 
-**Assumptions**
+### Assumptions
 
 - One company with a roster of four technicians. Branch is a field on the order,
   but there is no per-branch access control.
@@ -428,28 +473,28 @@ answer to a different question is worse than a decline.
   WhatsApp with the message pre-filled and asks the sender who to send it to.
   See [Demo data and privacy](#demo-data-and-privacy).
 
-**Challenges**
+### Challenges
 
-The completion form was the hardest thing to get right, and the difficulty was
-judgement rather than code. It is easy to make thorough and miserable to use
+**The completion form was the hardest thing to get right**, and the difficulty
+was judgement rather than code. It is easy to make thorough and miserable to use
 one-handed in somebody's hallway. Deciding what to derive, what to make
 optional, and what to require took several passes.
 
-The AI module was the other one. The brief warns against unrestricted database
-access, and the obvious implementation, handing the model a table dump, is
-exactly that. Declaring each query instead means the assistant answers less, but
-what it answers can be checked.
+**The AI module was the other one.** The brief warns against unrestricted
+database access, and the obvious implementation, handing the model a table dump,
+is exactly that. Declaring each query instead means the assistant answers less,
+but what it answers can be checked.
 
-Uploads needed care too. Partial failures are reported per file, because losing
-a finished write-up over one failed photo is not acceptable.
+**Uploads needed care too.** Partial failures are reported per file, because
+losing a finished write-up over one failed photo is not acceptable.
 
 ---
 
 ## Demo data and privacy
 
 No real personal data ships in this repository or in the live demo. That is a
-deliberate posture, not an omission, because the repo is public and the demo
-database is open to anyone holding the URL.
+deliberate choice, because the repo is public and the demo database is open to
+anyone holding the URL.
 
 - **Technician numbers are empty.** The roster seeds with `null`. A `wa.me` link
   without a recipient still opens WhatsApp with the brief pre-filled and asks
@@ -457,15 +502,16 @@ database is open to anyone holding the URL.
   handset. Set `VITE_DEMO_PHONE` in a local `.env` to point the whole roster at
   your own number while testing.
 - **Customer numbers are placeholders** in the `012-345 67xx` range. They are
-  display data only: a customer `wa.me` link will not resolve to a real WhatsApp
-  account. That is the trade for not publishing somebody's number. Clear an
-  order's `phone` to demo the working link on that order.
+  display data only, so a customer `wa.me` link will not resolve to a real
+  WhatsApp account. That is the trade for not publishing somebody's number.
+  Clear an order's `phone` to demo the working link on that order.
 - **`MANAGER_WHATSAPP` is unset.** The completion notice still renders and is
-  written to `notifications`; its link asks the sender to choose a contact.
+  written to `notifications`. Its link asks the sender to choose a contact.
 - **Do not enter real customer details into the live demo.** RLS grants the
   anonymous role full read and write (see [Limitations](#limitations)) and the
   anon key ships in the bundle by design, so every row is readable by anyone
-  with the URL. Uploaded evidence is the same: the storage bucket is public.
+  with the URL. Uploaded evidence is the same, because the storage bucket is
+  public.
 - **Only the publishable Supabase key reaches the browser.** `GEMINI_API_KEY`
   carries no `VITE_` prefix and is read solely by the functions in `api/`.
   Anything prefixed `VITE_` is inlined into the JavaScript bundle, which is why
@@ -524,11 +570,14 @@ so the admin keeps the order list in view.
 **Which module was hardest?**
 
 The AI module, though not for the API call. The hard part was deciding what the
-model is allowed to do. Letting it write queries would have supported far more
-questions and made every answer untrustworthy. Restricting it to routing and
-phrasing meant building the retrieval, the computation, the refusals, the
-keyword fallback and the check on invented identifiers by hand. Module 2 was a
-close second, for the reasons above.
+model is allowed to do.
+
+Letting it write queries would have supported far more questions and made every
+answer untrustworthy. Restricting it to routing and phrasing meant building the
+retrieval, the computation, the refusals, the keyword fallback and the check on
+invented identifiers by hand.
+
+Module 2 was a close second, for the reasons above.
 
 **What would you improve in a real production system?**
 
