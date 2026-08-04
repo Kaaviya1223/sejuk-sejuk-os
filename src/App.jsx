@@ -61,7 +61,7 @@ function Wordmark({ tone = 'dark' }) {
             dark ? 'text-ink' : 'text-white'
           }`}
         >
-          Sejuk Sejuk <span className={dark ? 'text-coolant' : 'text-coolant-200'}>Ops</span>
+          Sejuk Sejuk <span className={dark ? 'text-coolant' : 'text-coolant-200'}>OS</span>
         </span>
         <span className={`block text-[10px] ${dark ? 'text-slate-light' : 'text-white/60'}`}>
           Field Service Management

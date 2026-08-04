@@ -1,4 +1,4 @@
-# Sejuk Sejuk Ops
+# Sejuk Sejuk OS
 
 An internal operations system for an air-conditioner service company.
 
