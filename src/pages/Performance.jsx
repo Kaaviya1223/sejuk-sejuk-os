@@ -10,10 +10,10 @@ import { useTheme } from '../context/theme.js'
 import { COMPLETED_STATUSES } from '../lib/constants.js'
 
 /**
- * Bonus module — technician performance.
+ * Technician performance.
  *
- * Weekly is the brief's minimum, so the period selector opens on this week and
- * every figure recomputes against it. Aggregation happens in the browser over a
+ * Weekly is the shortest period worth ranking on, so the selector opens there
+ * and every figure recomputes against it. Aggregation happens in the browser over a
  * bounded fetch: correct at this scale, and the wrong place for it at real
  * volume — see the README.
  */

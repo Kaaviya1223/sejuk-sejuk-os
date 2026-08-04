@@ -98,7 +98,7 @@ function AdminOrders() {
     setError(null)
     try {
       const created = await createOrder(form, actor)
-      // Module 1 bonus: notify the technician the moment they're assigned.
+      // Notify the technician the moment they're assigned.
       const notifications = await sendAssignmentNotification(created, technicians)
       setReceipt({ order: created, notifications })
       setForm(BLANK)

@@ -24,10 +24,10 @@ environment variables before the first deploy:
 `VITE_` prefix on purpose: anything prefixed that way is inlined into the
 JavaScript bundle and readable by every visitor.
 
-**What is covered:** Module 1, Module 2 and Module 3, plus both WhatsApp
-bonuses, the KPI dashboard, the AI Operations Query Window, and two of the three
-advanced AI challenges (workflow supervisor and operational insight). AI
-document understanding is not built, and the reason is in
+**What is covered:** all three modules, order confirmation and the WhatsApp job
+brief, payment capture, the manager review queue, the KPI dashboard, the AI
+Operations Query Window and the AI workflow supervisor. AI document
+understanding is not built, and the reason is in
 [What is not built](#what-is-not-built).
 
 ---
@@ -71,10 +71,10 @@ Create an order with an auto-generated order number, customer name, phone,
 address, problem description, service type, quoted price, assigned technician
 and admin notes, plus a branch and a scheduled date.
 
-Both bonuses are included. After saving, a confirmation panel shows the new
-order number, customer, price and resulting status. Assigning a technician
-builds a WhatsApp job brief with the address, phone, issue, quote and office
-notes, and renders it as a `wa.me` link.
+After saving, a confirmation panel shows the new order number, customer, price
+and resulting status. Assigning a technician builds a WhatsApp job brief with
+the address, phone, issue, quote and office notes, and renders it as a `wa.me`
+link.
 
 The order list has search across order number, customer, phone and address, and
 filter chips per status that carry their own counts. It is a table on desktop
@@ -97,9 +97,9 @@ capture on mobile. Order number, technician name, timestamp and final amount are
 derived rather than typed, and the running final amount stays visible in the
 footer.
 
-Both bonuses are included. Payment capture (amount, method, receipt photo,
-notes) sits collapsed by default so the common path stays short, and completing
-a job produces a customer feedback message and a manager notice.
+Payment capture (amount, method, receipt photo, notes) sits collapsed by default
+so the common path stays short, and completing a job produces a customer
+feedback message and a manager notice.
 
 ### Module 3: WhatsApp notification trigger
 
@@ -118,7 +118,7 @@ messages in the browser if it is unreachable.
 Delivery is a `wa.me` deep link, which the brief allows. There are no WhatsApp
 Business API credentials for this build.
 
-### Bonus: KPI dashboard
+### KPI dashboard
 
 A Performance page for admins and managers: jobs completed, value collected,
 postponements, and a leaderboard ranked by jobs with value as the tie-break.
@@ -141,7 +141,7 @@ unassigned work, a manager sees work waiting for sign-off.
 A manager-only side panel, opened with Ask in the top bar. Details are in
 [AI integration](#ai-integration).
 
-### Advanced AI: Workflow Supervisor
+### AI: Workflow Supervisor
 
 A "Needs attention" card on the dashboard, backed by
 [`api/supervise.js`](api/supervise.js). It checks completed jobs against four
@@ -221,7 +221,7 @@ technician role renders completely different chrome, because the brief says
 office staff are on desktops and technicians are on phones.
 
 **One set of class names for light and dark.** The semantic colour tokens are
-CSS variables read through Tailwind, so around 320 colour usages across 16 files
+CSS variables read through Tailwind, so around 330 colour usages across 19 files
 switch theme without a single `dark:` variant. The dark palette was chosen
 against a dark surface rather than inverted, including the chart colours.
 
@@ -257,7 +257,9 @@ src/
   context/     SessionContext.jsx (mock login), ThemeContext.jsx
   components/  ui.jsx (design primitives), charts.jsx, OrderList,
                OrderDetailSheet, JobCompletionSheet, WhatsAppPreview,
-               AssistantPanel, SupervisorCard, NotificationBell
+               AssistantPanel, SupervisorCard, NotificationBell,
+               StatusBadge, StatusTrack, RoleSwitcher, SchemaBanner,
+               ThemeToggle
   pages/       Overview.jsx, AdminOrders.jsx, TechnicianPortal.jsx,
                ReviewQueue.jsx, Performance.jsx
 api/
@@ -441,7 +443,7 @@ a finished write-up over one failed photo is not acceptable.
   records that the link was opened and lets the sender confirm it went, which is
   as far as a deep link can go. Swapping in the Business API means replacing one
   function in `api/notify.js` and handling its status webhooks.
-- **AI document understanding**, the third advanced challenge. Extracting fields
+- **AI document understanding.** Extracting fields
   from an uploaded invoice needs a vision call per document, and in this system
   the evidence already arrives as structured fields the technician typed, so it
   would re-derive what the form already collected.

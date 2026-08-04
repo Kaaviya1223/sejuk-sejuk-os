@@ -504,7 +504,7 @@ export async function completeJob(order, form, actor) {
 }
 
 /* ------------------------------------------------------------------ */
-/* WhatsApp messages (Module 1 + 2 bonuses)                            */
+/* WhatsApp messages                                                   */
 /* ------------------------------------------------------------------ */
 
 /**
@@ -524,7 +524,7 @@ async function recordNotification(notification) {
   }
 }
 
-/** Module 1 bonus — job brief to the technician when they are assigned. */
+/** Job brief to the technician when they are assigned. */
 export async function sendAssignmentNotification(order, technicians = []) {
   if (!order?.assigned_technician) return []
   const tech = technicians.find((t) => t.name === order.assigned_technician)
@@ -562,8 +562,8 @@ async function triggerJobDoneNotifications(order) {
 }
 
 /**
- * Module 2 bonus — fires when a job is marked Job Done: a feedback request to
- * the customer and a completion notice for the manager / accounts.
+ * Fires when a job is marked Job Done: a feedback request to the customer and
+ * a completion notice for the manager / accounts.
  */
 export async function buildJobDoneNotifications(order, managerPhone = null) {
   const messages = [
