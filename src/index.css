@@ -9,41 +9,42 @@
    * the ink steps were picked against that surface.
    */
   :root {
-    --surface: 255 255 255;
-    --canvas: 241 245 249;
-    --subtle: 227 234 243;
-    --ink: 23 63 107;
-    --muted: 90 107 128;
-    --faint: 138 153 172;
-    --line: 221 228 237;
-    --brand: 30 85 145;
-    --chip: 232 240 250;
-    --accent-soft: 231 245 242;
+    --surface: 255 255 255; /* cards and forms  #FFFFFF */
+    --canvas: 244 247 249; /* page background  #F4F7F9 */
+    --subtle: 229 235 240;
+    --ink: 38 50 56; /* main text        #263238 */
+    --muted: 84 110 122;
+    --faint: 144 164 174;
+    --line: 222 229 234;
+    --brand: 21 101 192; /* deep blue        #1565C0 */
+    --chip: 227 242 253;
+    --accent-soft: 224 242 241;
     --success-soft: 236 250 240;
 
     --sheen-a: 255 255 255;
-    --sheen-b: 251 252 254;
-    --sheen-c: 245 248 252;
-    --sweep: 250 252 254;
+    --sheen-b: 252 253 254;
+    --sheen-c: 247 250 251;
+    --sweep: 250 252 253;
   }
 
+  /* Dark keeps the same hues, stepped for a dark surface rather than flipped. */
   .dark {
-    --surface: 19 32 47;
-    --canvas: 11 22 34;
-    --subtle: 28 44 63;
-    --ink: 226 234 243;
-    --muted: 154 170 189;
-    --faint: 121 138 158;
-    --line: 39 56 76;
-    --brand: 125 176 226;
-    --chip: 26 47 71;
-    --accent-soft: 13 51 49;
+    --surface: 22 34 43;
+    --canvas: 14 22 29;
+    --subtle: 32 46 57;
+    --ink: 225 233 238;
+    --muted: 154 170 179;
+    --faint: 120 139 149;
+    --line: 43 58 70;
+    --brand: 100 181 246; /* #64B5F6, 7.3:1 on the dark surface */
+    --chip: 21 51 79;
+    --accent-soft: 10 48 44;
     --success-soft: 15 45 28;
 
-    --sheen-a: 22 36 53;
-    --sheen-b: 20 33 49;
-    --sheen-c: 18 30 45;
-    --sweep: 46 66 90;
+    --sheen-a: 25 38 47;
+    --sheen-b: 23 35 44;
+    --sheen-c: 21 32 41;
+    --sweep: 50 68 80;
   }
 
   /* Shadows are near-invisible on a dark canvas; a hairline does the lifting. */

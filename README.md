@@ -209,6 +209,22 @@ CSS variables read through Tailwind, so around 320 colour usages across 16 files
 switch theme without a single `dark:` variant. The dark palette was chosen
 against a dark surface rather than inverted, including the chart colours.
 
+**The palette follows the brand spec.**
+
+| Usage | Colour | Hex |
+| --- | --- | --- |
+| Primary navigation and buttons | Deep Blue | `#1565C0` |
+| Secondary actions | Teal | `#00897B` |
+| Page background | Light Grey | `#F4F7F9` |
+| Cards and forms | White | `#FFFFFF` |
+| Main text | Dark Navy | `#263238` |
+
+Two working notes. White text on the teal measures 4.32:1, just under AA for
+body size, so filled teal buttons use a slightly darker step at 5.32:1 and the
+spec value stays for accents, icons and rules where nothing sits on top of it.
+And green is reserved for one meaning: a job that is finished. It is not part of
+the brand palette, and nothing decorative wears it.
+
 **Status colours come from one file.** `src/lib/palette.js` is read by both the
 badges and the charts, so a status never means one colour in a table and another
 in a chart. The six were checked for colour-blind separation against the card

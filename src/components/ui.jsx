@@ -95,7 +95,8 @@ export function CardHeader({ title, subtitle, actions, divided = true, accent = 
 
 const BUTTON_VARIANTS = {
   primary: 'bg-marine text-white hover:bg-marine-600 disabled:bg-marine/40',
-  accent: 'bg-coolant text-white hover:bg-coolant-600 disabled:bg-coolant/40',
+  // The 600 step, so white text on a filled teal button clears AA.
+  accent: 'bg-coolant-600 text-white hover:bg-coolant-700 disabled:bg-coolant/40',
   // Green appears on exactly one kind of button: the one that finishes a job.
   success: 'bg-success text-white hover:bg-success-600 disabled:bg-success/40',
   outline: 'border border-slate-line bg-surface text-ink hover:bg-frost disabled:text-slate-light',

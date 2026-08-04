@@ -24,26 +24,31 @@ export default {
           DEFAULT: themed('canvas'),
           deep: themed('subtle'),
         },
-        // Primary. Headings, sidebar top, primary actions.
+        /**
+         * Primary. Navigation and buttons, per the brand spec: Deep Blue
+         * #1565C0. The darker steps are for hover and for text that needs more
+         * weight; white on the default clears AA at 5.75:1.
+         */
         marine: {
-          DEFAULT: '#173F6B',
-          700: '#12365E',
-          600: '#1E5591',
-          500: '#2A6DB0',
+          DEFAULT: '#1565C0',
+          700: '#0D47A1',
+          600: '#1565C0',
+          500: '#1976D2',
           100: themed('chip'),
         },
         /**
-         * Secondary. Aircon-cold teal: the company is called "Sejuk" — cool —
-         * so the brand is the temperature it sells. Teal also keeps the chrome
-         * clear of green, which is reserved below for "finished".
+         * Secondary actions, per the brand spec: Teal #00897B. White text on
+         * that step measures 4.32:1, just under AA for body size, so filled
+         * teal buttons use the 600 step at 5.32:1 and the spec value is kept
+         * for accents, icons and rules where nothing sits on top of it.
          */
         coolant: {
-          DEFAULT: '#0E8C7B',
+          DEFAULT: '#00897B',
           50: themed('accent-soft'),
-          100: '#CDEAE5',
-          200: '#9BD6CD',
-          600: '#0B7466',
-          700: '#095C51',
+          100: '#B2DFDB',
+          200: '#80CBC4',
+          600: '#00796B',
+          700: '#00695C',
         },
         /**
          * Success. Used *only* where something is complete — the finish button
@@ -80,9 +85,9 @@ export default {
       },
       backgroundImage: {
         // The dashboard band: teal at the near edge, deep blue at the far one.
-        'brand-sweep': 'linear-gradient(105deg, #0E8C7B 0%, #157B90 48%, #1E5591 100%)',
+        'brand-sweep': 'linear-gradient(105deg, #00897B 0%, #0F79A8 48%, #1565C0 100%)',
         // Sidebar: deep blue at the top, settling into teal at the base.
-        'brand-column': 'linear-gradient(180deg, #1E5591 0%, #157B90 45%, #0E8C7B 100%)',
+        'brand-column': 'linear-gradient(180deg, #1565C0 0%, #0F79A8 45%, #00897B 100%)',
         // Decorative layers for the band: two soft lights and a fine dot grid.
         'brand-glow':
           'radial-gradient(60rem 22rem at 12% -40%, rgba(255,255,255,0.30), transparent 60%), radial-gradient(38rem 20rem at 88% 130%, rgba(255,255,255,0.20), transparent 60%)',
@@ -92,13 +97,13 @@ export default {
           'linear-gradient(180deg, rgb(var(--sheen-a)) 0%, rgb(var(--sheen-b)) 62%, rgb(var(--sheen-c)) 100%)',
       },
       boxShadow: {
-        card: '0 1px 2px rgba(23, 63, 107, 0.04), 0 1px 3px rgba(23, 63, 107, 0.07)',
-        lift: '0 10px 26px -6px rgba(23, 63, 107, 0.18), 0 3px 8px rgba(23, 63, 107, 0.08)',
-        sheet: '0 -4px 24px rgba(23, 63, 107, 0.14)',
-        tile: '0 1px 2px rgba(23, 63, 107, 0.06), 0 6px 16px -6px rgba(23, 63, 107, 0.14)',
+        card: '0 1px 2px rgba(38, 50, 56, 0.04), 0 1px 3px rgba(38, 50, 56, 0.07)',
+        lift: '0 10px 26px -6px rgba(38, 50, 56, 0.18), 0 3px 8px rgba(38, 50, 56, 0.08)',
+        sheet: '0 -4px 24px rgba(38, 50, 56, 0.14)',
+        tile: '0 1px 2px rgba(38, 50, 56, 0.06), 0 6px 16px -6px rgba(38, 50, 56, 0.14)',
         // Coloured glows so an icon chip sits *on* the card rather than in it.
-        'glow-blue': '0 6px 16px -4px rgba(42, 109, 176, 0.45)',
-        'glow-teal': '0 6px 16px -4px rgba(14, 140, 123, 0.45)',
+        'glow-blue': '0 6px 16px -4px rgba(21, 101, 192, 0.45)',
+        'glow-teal': '0 6px 16px -4px rgba(0, 137, 123, 0.45)',
         'glow-green': '0 6px 16px -4px rgba(21, 128, 61, 0.42)',
         'glow-amber': '0 6px 16px -4px rgba(217, 119, 6, 0.40)',
         'glow-copper': '0 6px 16px -4px rgba(193, 105, 79, 0.40)',
