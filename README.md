@@ -417,6 +417,34 @@ a finished write-up over one failed photo is not acceptable.
 
 ---
 
+## Demo data and privacy
+
+No real personal data ships in this repository or in the live demo. That is a
+deliberate posture, not an omission, because the repo is public and the demo
+database is open to anyone holding the URL.
+
+- **Technician numbers are empty.** The roster seeds with `null`. A `wa.me` link
+  without a recipient still opens WhatsApp with the brief pre-filled and asks
+  who to send it to, so the feature demonstrates itself without publishing a
+  handset. Set `VITE_DEMO_PHONE` in a local `.env` to point the whole roster at
+  your own number while testing.
+- **Customer numbers are placeholders** in the `012-345 67xx` range. They are
+  display data only: a customer `wa.me` link will not resolve to a real WhatsApp
+  account. That is the trade for not publishing somebody's number. Clear an
+  order's `phone` to demo the working link on that order.
+- **`MANAGER_WHATSAPP` is unset.** The completion notice still renders and is
+  written to `notifications`; its link asks the sender to choose a contact.
+- **Do not enter real customer details into the live demo.** RLS grants the
+  anonymous role full read and write (see [Limitations](#limitations)) and the
+  anon key ships in the bundle by design, so every row is readable by anyone
+  with the URL. Uploaded evidence is the same — the storage bucket is public.
+- **Only the publishable Supabase key reaches the browser.** `GEMINI_API_KEY`
+  carries no `VITE_` prefix and is read solely by the functions in `api/`.
+  Anything prefixed `VITE_` is inlined into the JavaScript bundle, which is why
+  `VITE_DEMO_PHONE` belongs in a local `.env` and never in deployment settings.
+
+---
+
 ## Limitations
 
 - **No real authentication.** The role switcher is a mock login in
