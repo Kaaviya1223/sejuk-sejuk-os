@@ -86,37 +86,47 @@ inlined into the JavaScript bundle and readable by every visitor.
 
 ### Module 1: Admin Portal
 
-**Creating an order.** Auto-generated order number, customer name, phone,
-address, problem description, service type, quoted price, assigned technician
-and admin notes, plus a branch and a scheduled date.
+#### Creating an order
+
+The form captures customer name, phone, address, problem description, service
+type, quoted price, assigned technician and admin notes, plus a branch and a
+scheduled date. The order number is generated automatically.
 
 After saving, a confirmation panel shows the new order number, customer, price
-and resulting status. Assigning a technician builds a WhatsApp job brief and
-renders it as a `wa.me` link.
+and resulting status. If a technician was assigned, the app also builds a
+WhatsApp job brief and renders it as a `wa.me` link.
 
-**Finding an order.** Search across order number, customer, phone and address.
-Filter chips per status, each carrying its own count. A table on desktop, cards
-on mobile. Opening an order shows the full record, its files, its WhatsApp
-history and its audit trail.
+#### Finding an order
 
-**Correcting an order.** Intake mistakes are ordinary. A quote typed as 350 when
-it was agreed at 3500 matters more than a wrong phone number, and the only
-alternative was deleting the order and re-entering it, which threw away its
-files, its messages and its trail.
+Search covers order number, customer, phone and address. Filter chips for each
+status carry their own count. The list is a table on desktop and cards on
+mobile.
 
-**Edit details** covers customer name, phone, address, problem reported, service
-type, quoted price, branch and admin notes. It is admin only, and stops once the
-order is Closed.
+Opening an order shows the full record, its files, its WhatsApp history and its
+audit trail.
 
-Two rules make it safe:
+#### Correcting an order
 
-- Only fields that actually changed are written, and each one is recorded in the
-  audit trail with the value it replaced. This matters most for the quote, since
-  it drives the variance a manager reviews and the totals on the Performance
-  page. An edit after completion moves those figures, and the trail is what
-  makes that clear afterwards. The form warns before the edit, not after.
-- Messages already generated keep the details they were sent with. They are a
-  log of what the customer actually received, not a view of the order.
+An admin can edit an order after it has been created. **Edit details** covers
+customer name, phone, address, problem reported, service type, quoted price,
+branch and admin notes. Admins only, and it stops once the order reaches Closed.
+
+This exists because mistakes at intake are ordinary, and a wrong quoted price is
+the expensive kind: 350 typed where 3500 was agreed. Before this, the only way
+to fix one was to delete the order and enter it again, which lost its files, its
+messages and its audit trail.
+
+Two rules keep an edit honest:
+
+- **Only fields that actually changed are written**, and each one is recorded in
+  the audit trail with the value it replaced.
+- **Messages already sent keep the details they were sent with.** They record
+  what the customer received, not what the order says now.
+
+The quoted price needs the most care. It drives the variance a manager reviews
+and the totals on the Performance page, so editing it after a job is complete
+changes figures that have already been reported. The form warns before the edit,
+and the trail shows what moved.
 
 ### Module 2: Technician Portal
 
