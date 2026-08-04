@@ -440,6 +440,12 @@ close second, for the reasons above.
 I used Claude Code throughout. I worked in a loop: describe what I wanted,
 review what came back, run it, and correct it.
 
-Most of my effort went into direction and review. I chose the reference design,
-set the visual direction, decided what stayed and what got cut, and found the
-problems by using the app rather than by reading the code.
+Most of my effort went into direction and review. I chose the reference design
+and set the visual direction, then took several passes at the palette, the
+typeface and the layout of each screen until they read the way I wanted. I also
+decided what stayed and what got cut, including one panel I removed because it
+suited a reviewer more than it suited an operations manager.
+
+I found the problems by using the app rather than by reading the code. Work that
+looks right in the source often falls apart on screen, so nothing was finished
+until I had run it myself.
