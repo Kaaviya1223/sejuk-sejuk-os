@@ -59,8 +59,8 @@ function WhatsAppPreview({ notification, compact = false, step }) {
           )}
         </div>
 
-        {/* The link never goes away. Marking it sent is a separate act, and
-            somebody who closed WhatsApp needs to be able to open it again. */}
+        {/* The link never goes away. Confirming it went is a separate act, and
+            somebody who closed WhatsApp needs to be able to send it again. */}
         <div className="flex shrink-0 items-center gap-1.5">
           <a
             href={notification.deep_link}
@@ -73,7 +73,7 @@ function WhatsAppPreview({ notification, compact = false, step }) {
           >
             <Button variant={sent || opened ? 'outline' : 'whatsapp'} size="sm">
               <ExternalLink size={13} />
-              {sent || opened ? 'Open again' : 'Open in WhatsApp'}
+              {sent || opened ? 'Resend' : 'Send in WhatsApp'}
             </Button>
           </a>
 

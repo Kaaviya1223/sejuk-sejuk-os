@@ -122,9 +122,10 @@ function NotificationBell() {
                         </p>
                       </div>
 
-                      {/* Opened is observed. Sent is confirmed by the person
-                          who sent it, because nothing else can know. The link
-                          stays available in every state: somebody who closed
+                      {/* The button says what the reader is about to do; the
+                          line above says what the app actually knows. Sending
+                          is theirs to do, so the verb is theirs. The link stays
+                          available in every state, because somebody who closed
                           WhatsApp by accident needs a way back to it. */}
                       <div className="mt-0.5 flex shrink-0 flex-col items-end gap-1 self-start">
                         {n.deep_link && (
@@ -136,7 +137,7 @@ function NotificationBell() {
                             className="flex h-7 items-center gap-1 rounded-lg border border-slate-line px-2 text-[11px] font-medium text-brand transition hover:bg-frost"
                           >
                             <ExternalLink size={11} />
-                            {n.opened_at || n.sent_at ? 'Open again' : 'Open'}
+                            {n.opened_at || n.sent_at ? 'Resend' : 'Send'}
                           </a>
                         )}
                         {n.opened_at && !n.sent_at && (
