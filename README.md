@@ -437,16 +437,9 @@ close second, for the reasons above.
 
 **How did you use AI tools while building this project?**
 
-I used Claude Code throughout and would rather say so plainly. It wrote most of
-the code. I decided what to build, reviewed what came back, and kept testing
-until it held up.
+I used Claude Code throughout. I worked in a loop: describe what I wanted,
+review what came back, run it, and correct it.
 
-Most of my time went into that loop. I chose the reference design and pushed
-back through several passes on the palette, the typeface and the layout, and cut
-a panel under every AI answer that printed the SQL, which was useful to a
-reviewer and useless to an operations manager. The bugs came from using the app
-rather than reading it: a role menu clipped by a decorative layer, the assistant
-looking broken on submit, an invented order number, and a Reopen button that
-went around the state machine and did nothing. All of it looked fine in the
-source. The tool is fast at producing something plausible, and the value I added
-was not accepting plausible.
+Most of my effort went into direction and review. I chose the reference design,
+set the visual direction, decided what stayed and what got cut, and found the
+problems by using the app rather than by reading the code.
