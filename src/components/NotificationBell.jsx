@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Bell, ExternalLink, MessageCircle } from 'lucide-react'
+import { Bell, Check, ExternalLink, MessageCircle } from 'lucide-react'
 
-import { listNotifications, markNotificationSent } from '../lib/orders.js'
+import { listNotifications, markNotificationOpened, markNotificationSent } from '../lib/orders.js'
 import { TEMPLATES } from '../lib/whatsapp.js'
 import { displayPhone, relativeTime } from '../lib/format.js'
 
 /**
  * The top bar's notification feed.
  *
- * "Unread" here means *undispatched*: the system generated a WhatsApp message
- * and nobody has opened the link yet. That is the only unread state this app
- * can honestly claim, since delivery is a human tapping `wa.me` rather than an
- * API call — so the badge counts work waiting to be done, not messages waiting
- * to be looked at.
+ * Two states, because a deep link only supports two. Opening the link is all
+ * the app can observe, so that is recorded as "opened". Whether the message
+ * actually went is something only the person can confirm, so they confirm it.
+ * Nothing here claims delivery, which would need the WhatsApp Business API.
+ *
+ * The badge counts messages nobody has opened yet, which is the work still
+ * waiting to be done.
  */
 function NotificationBell() {
   const [open, setOpen] = useState(false)
@@ -34,14 +36,12 @@ function NotificationBell() {
     load()
   }, [load])
 
-  const pending = items.filter((n) => !n.sent_at).length
+  const pending = items.filter((n) => !n.opened_at && !n.sent_at).length
 
-  const send = async (notification) => {
-    // Optimistic: the link opens either way, so the stamp must not gate it.
-    setItems((prev) =>
-      prev.map((n) => (n.id === notification.id ? { ...n, sent_at: new Date().toISOString() } : n)),
-    )
-    await markNotificationSent(notification.id)
+  // Optimistic: the link opens either way, so the stamp must not gate it.
+  const stamp = (id, field, fn) => {
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, [field]: new Date().toISOString() } : n)))
+    fn(id)
   }
 
   return (
@@ -74,7 +74,7 @@ function NotificationBell() {
             <div className="flex items-baseline justify-between border-b border-slate-line bg-frost/60 px-4 py-2.5">
               <p className="font-display text-sm font-semibold text-brand">Notifications</p>
               <p className="text-[11px] text-slate">
-                {pending ? `${pending} not sent yet` : 'all sent'}
+                {pending ? `${pending} not opened yet` : 'all opened'}
               </p>
             </div>
 
@@ -98,7 +98,7 @@ function NotificationBell() {
                     >
                       <span
                         className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
-                          n.sent_at ? 'bg-slate-line' : 'bg-copper'
+                          n.sent_at ? 'bg-slate-line' : n.opened_at ? 'bg-coolant' : 'bg-copper'
                         }`}
                         aria-hidden
                       />
@@ -114,21 +114,37 @@ function NotificationBell() {
                         </p>
                         <p className="mt-0.5 text-[11px] text-slate-light">
                           {n.recipient_phone ? `${displayPhone(n.recipient_phone)} · ` : ''}
-                          {n.sent_at ? `sent ${relativeTime(n.sent_at)}` : relativeTime(n.created_at)}
+                          {n.sent_at
+                            ? `sent ${relativeTime(n.sent_at)}`
+                            : n.opened_at
+                              ? `opened ${relativeTime(n.opened_at)}`
+                              : relativeTime(n.created_at)}
                         </p>
                       </div>
 
-                      {n.deep_link && (
-                        <a
-                          href={n.deep_link}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={() => send(n)}
-                          className="mt-0.5 flex h-7 shrink-0 items-center gap-1 self-start rounded-lg border border-slate-line px-2 text-[11px] font-medium text-brand transition hover:bg-frost"
+                      {/* Opened is observed. Sent is confirmed by the person
+                          who sent it, because nothing else can know. */}
+                      {n.opened_at && !n.sent_at ? (
+                        <button
+                          onClick={() => stamp(n.id, 'sent_at', markNotificationSent)}
+                          className="mt-0.5 flex h-7 shrink-0 items-center gap-1 self-start rounded-lg bg-coolant-600 px-2 text-[11px] font-medium text-white transition hover:bg-coolant-700"
                         >
-                          <ExternalLink size={11} />
-                          {n.sent_at ? 'Resend' : 'Send'}
-                        </a>
+                          <Check size={11} />
+                          Mark as sent
+                        </button>
+                      ) : (
+                        n.deep_link && (
+                          <a
+                            href={n.deep_link}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={() => stamp(n.id, 'opened_at', markNotificationOpened)}
+                            className="mt-0.5 flex h-7 shrink-0 items-center gap-1 self-start rounded-lg border border-slate-line px-2 text-[11px] font-medium text-brand transition hover:bg-frost"
+                          >
+                            <ExternalLink size={11} />
+                            {n.sent_at ? 'Resend' : 'Open'}
+                          </a>
+                        )
                       )}
                     </li>
                   ))}

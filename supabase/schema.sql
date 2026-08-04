@@ -153,6 +153,10 @@ create table if not exists public.notifications (
   created_at     timestamptz not null default now()
 );
 
+-- A deep link can only tell us that WhatsApp was opened. `sent_at` is the
+-- office confirming the message actually went, which is a separate act.
+alter table public.notifications add column if not exists opened_at timestamptz;
+
 create index if not exists notifications_order_idx   on public.notifications (order_id);
 create index if not exists notifications_created_idx on public.notifications (created_at desc);
 

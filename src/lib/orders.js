@@ -119,12 +119,12 @@ export async function listNotifications({ orderId, limit = 50 } = {}) {
  * opens that link — this is the only place the app can honestly record it.
  * Best-effort: failing to log the stamp must never block the send itself.
  */
-export async function markNotificationSent(id) {
+async function stampNotification(id, patch) {
   if (!id) return null
   try {
     const { data, error } = await supabase
       .from('notifications')
-      .update({ sent_at: new Date().toISOString() })
+      .update(patch)
       .eq('id', id)
       .select()
       .single()
@@ -132,6 +132,28 @@ export async function markNotificationSent(id) {
   } catch {
     return null
   }
+}
+
+/**
+ * Records that somebody opened the WhatsApp link.
+ *
+ * This is all a deep link can tell us. Opening it means WhatsApp launched with
+ * the text ready; whether the sender then pressed send, edited it first, or
+ * closed the app, never reaches us. Real delivery receipts need the WhatsApp
+ * Business API and its status webhooks.
+ *
+ * Falls back to stamping `sent_at` if `opened_at` does not exist yet, so the
+ * feature still works before the migration is re-run.
+ */
+export async function markNotificationOpened(id) {
+  const opened = await stampNotification(id, { opened_at: new Date().toISOString() })
+  if (opened) return opened
+  return stampNotification(id, { sent_at: new Date().toISOString() })
+}
+
+/** The office confirming that the message actually went out. */
+export async function markNotificationSent(id) {
+  return stampNotification(id, { sent_at: new Date().toISOString() })
 }
 
 /* ------------------------------------------------------------------ */

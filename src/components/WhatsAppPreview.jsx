@@ -1,8 +1,9 @@
-import { AlertTriangle, ExternalLink, MessageCircle } from 'lucide-react'
+import { useState } from 'react'
+import { AlertTriangle, Check, ExternalLink, MessageCircle } from 'lucide-react'
 import { Button } from './ui.jsx'
 import { TEMPLATES } from '../lib/whatsapp.js'
 import { displayPhone } from '../lib/format.js'
-import { markNotificationSent } from '../lib/orders.js'
+import { markNotificationOpened, markNotificationSent } from '../lib/orders.js'
 
 /**
  * Renders one generated notification: who it goes to, the exact message text,
@@ -15,6 +16,10 @@ import { markNotificationSent } from '../lib/orders.js'
  * not scanning a field.
  */
 function WhatsAppPreview({ notification, compact = false, step }) {
+  // Opening the link is observable. Whether it was sent is not, so it is asked.
+  const [opened, setOpened] = useState(Boolean(notification?.opened_at))
+  const [sent, setSent] = useState(Boolean(notification?.sent_at))
+
   if (!notification) return null
 
   const label = TEMPLATES[notification.template]?.label
@@ -54,21 +59,41 @@ function WhatsAppPreview({ notification, compact = false, step }) {
           )}
         </div>
 
-        {/* Opening the link is the only moment this app can call a message
-            "sent", so stamp it here too — otherwise the bell keeps counting
-            work that has already been done. */}
-        <a
-          href={notification.deep_link}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => markNotificationSent(notification.id)}
-          className="shrink-0"
-        >
-          <Button variant="whatsapp" size="sm">
-            <ExternalLink size={13} />
-            Send
+        {sent ? (
+          <span className="flex shrink-0 items-center gap-1 rounded-lg bg-success-50 px-2.5 py-1.5 text-[11px] font-medium text-success-700 dark:text-[#7FD79A]">
+            <Check size={12} />
+            Sent
+          </span>
+        ) : opened ? (
+          <Button
+            variant="accent"
+            size="sm"
+            className="shrink-0"
+            onClick={() => {
+              setSent(true)
+              markNotificationSent(notification.id)
+            }}
+          >
+            <Check size={13} />
+            Mark as sent
           </Button>
-        </a>
+        ) : (
+          <a
+            href={notification.deep_link}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => {
+              setOpened(true)
+              markNotificationOpened(notification.id)
+            }}
+            className="shrink-0"
+          >
+            <Button variant="whatsapp" size="sm">
+              <ExternalLink size={13} />
+              Open in WhatsApp
+            </Button>
+          </a>
+        )}
       </div>
 
       {!compact && (

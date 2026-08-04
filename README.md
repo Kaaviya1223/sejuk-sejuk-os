@@ -267,9 +267,16 @@ WhatsApp draft stays editable, so they should read it first. Every generated
 message is written to `notifications`, so the history is auditable even though
 sending is a manual tap.
 
-The top bar carries a feed of everything generated with a count of what has not
-gone out. Unread means undispatched: `sent_at` is stamped when somebody opens
-the link, which is the only moment the app can honestly call a message sent.
+The top bar carries a feed of everything generated, in two states, because a
+deep link only supports two. Opening the link is observable, so that is recorded
+as opened. Whether the message actually went is not observable at all: the
+person may edit it, or close WhatsApp without sending. So they confirm it, with
+a Mark as sent button. Nothing in the app claims delivery.
+
+Real sent, delivered and read receipts need the WhatsApp Business Cloud API,
+where messages go out over HTTP from the server and Meta posts status webhooks
+back. That needs a Meta Business account, a registered number and approved
+templates, which this build does not have.
 
 Numbers are normalised for `wa.me` (`012-345 6789` becomes `60123456789`) and
 displayed as `+60 12-345 6789`.
@@ -411,9 +418,11 @@ a finished write-up over one failed photo is not acceptable.
 
 ## What is not built
 
-- **Real WhatsApp delivery.** The trigger generates, records and returns a
-  `wa.me` link, and a human taps send. Swapping in the Business API means
-  replacing one function in `api/notify.js`.
+- **Real WhatsApp delivery, and therefore real delivery status.** The trigger
+  generates, records and returns a `wa.me` link, and a human taps send. The app
+  records that the link was opened and lets the sender confirm it went, which is
+  as far as a deep link can go. Swapping in the Business API means replacing one
+  function in `api/notify.js` and handling its status webhooks.
 - **AI document understanding**, the third advanced challenge. Extracting fields
   from an uploaded invoice needs a vision call per document, and in this system
   the evidence already arrives as structured fields the technician typed, so it
