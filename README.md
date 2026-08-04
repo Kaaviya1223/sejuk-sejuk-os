@@ -130,21 +130,21 @@ and the trail shows what moved.
 
 ### Module 2: Technician Portal
 
-#### Built for a phone, not a desk
+#### Designed for use on a phone
 
-Technicians use this standing in a customer's home, one-handed. So the
-technician role gets a different layout from the rest of the app: no sidebar,
-large tap targets, and an action bar fixed to the bottom of the screen with
-padding for the phone's home indicator.
+Technicians work standing in a customer's home, one-handed, so the technician
+role uses a different layout from the rest of the app: no sidebar, large tap
+targets, and an action bar fixed to the bottom of the screen with padding for
+the phone's home indicator.
 
-Two details that only matter in the field:
+Two affordances exist specifically for field use:
 
-- The address on a job card opens Google Maps with it already searched. The
+- The address on a job card opens Google Maps with it already searched, and the
   phone number opens the dialler.
 - The camera opens directly from the upload button, so evidence does not have to
-  be taken first and found afterwards.
+  be captured first and located afterwards.
 
-#### Doing the job
+#### Recording a job
 
 **Start job** moves the order to In Progress.
 
@@ -162,14 +162,14 @@ fields most jobs leave empty.
 
 Completing a job produces a customer feedback message and a manager notice.
 
-#### Why the rule is enforced by the query
+#### Access is scoped by the query, not the interface
 
 Only jobs assigned to the signed-in technician are fetched from the database at
 all.
 
-The rule "only the assigned technician may complete a job" could have been a
-hidden button. Instead, another technician's work never reaches the browser, so
-there is nothing to reveal.
+The rule "only the assigned technician may complete a job" could have been
+implemented as a hidden button. Scoping the query instead means another
+technician's work never reaches the browser, so there is nothing to reveal.
 
 ### Module 3: WhatsApp notification trigger
 
@@ -177,17 +177,17 @@ When a job is marked Job Done, the app calls
 [`api/notify.js`](api/notify.js), a serverless endpoint that generates the
 customer and manager messages.
 
-#### The endpoint does not trust its caller
+#### The endpoint verifies the status itself
 
 Given an order id, it re-reads that order from the database and checks
-`status = 'Job Done'` for itself. It does not accept the status from whoever
-called it.
+`status = 'Job Done'` for itself, rather than accepting the status from the
+caller.
 
-This is the point of putting it on the server. A client cannot fire "your job is
-complete" at a customer whose job is still open. If the status is wrong, the
-endpoint refuses with a 409 that names the actual status.
+This is the reason the check belongs on the server. A client cannot fire "your
+job is complete" at a customer whose job is still open. If the status does not
+match, the endpoint refuses with a 409 naming the actual status.
 
-Two more safeguards:
+Two further safeguards:
 
 - **Calling twice does not notify twice.** A repeat call returns what was
   already sent, unless `force` is passed.
@@ -199,10 +199,10 @@ read on screen is exactly what the endpoint records.
 
 #### Why delivery is a deep link
 
-A `wa.me` link is the method the brief names, and it is what this build can
-honestly do. The WhatsApp Business API needs a Meta Business account, a
-registered number and approved templates, all of which require a verified
-business behind them.
+A `wa.me` link is the method the brief names, and it is the extent of what this
+build can support. The WhatsApp Business API requires a Meta Business account, a
+registered number and approved message templates, all of which require a
+verified business entity behind them.
 
 Swapping one in later means replacing a single function in
 [`api/notify.js`](api/notify.js) and handling its status webhooks. The deep link
@@ -258,12 +258,13 @@ Four rules, each with its threshold written in code:
 | Postponed repeatedly | rescheduled twice or more |
 | Waiting on review | Job Done for three days or more |
 
-**The rules decide what is flagged, not the model.** The model only writes the
+**The rules decide what is flagged, not the model.** The model writes only the
 one-line summary at the top of the card. If it is unavailable, the flags are
-unchanged and the card says the summary was written without it.
+unchanged and the card states that the summary was written without it.
 
-That split is deliberate. A flag is a claim about a real job, so it comes from
-code that can be checked. Prose is the part where being wrong is survivable.
+The split is deliberate. A flag is a claim about a specific job, so it comes
+from code that can be inspected and tested. The model is given the part where an
+error costs wording rather than accuracy.
 
 ---
 
@@ -468,39 +469,40 @@ question -> 1. classify (model)   -> intent + parameters
          -> 4. phrase (model)     -> a sentence around those numbers
 ```
 
-Read that as: the model reads the question, the server gets the data and does
-the arithmetic, then the model writes the sentence.
+In plain terms: the model interprets the question, the server retrieves the data
+and performs the arithmetic, and the model then writes the sentence.
 
-#### The model never touches the database, and never produces a figure
+#### The model never queries the database or produces a figure
 
-It turns a question into an intent, and later turns finished numbers into prose.
-Every number in an answer was calculated in JavaScript from rows the server
-fetched.
+It converts a question into an intent, and later converts finished numbers into
+prose. Every number in an answer is calculated in JavaScript from rows the
+server retrieved.
 
-So a hallucination can change the wording of an answer. It cannot change the
-number in it.
+A hallucination can therefore change the wording of an answer, but not the
+figure inside it.
 
-#### Retrieval is declared in advance
+#### Retrieval is declared per intent
 
 Each intent names its table, its exact column list, its date window and a row
 cap. Nothing selects `*`.
 
-That means a customer's phone number cannot reach the model because somebody
-asked about job counts. The columns for that question do not include it.
+A customer's phone number therefore cannot reach the model because somebody
+asked about job counts, since the columns declared for that question do not
+include it.
 
-A technician name coming back from the classifier is only used after it matches
-a row in `technicians`, so the model cannot invent a filter value.
+A technician name returned by the classifier is used only after it matches a row
+in `technicians`, so the model cannot invent a filter value.
 
-#### Invented identifiers are checked for, not just forbidden
+#### Invented identifiers are validated, not just forbidden
 
 Asked for a count, where the facts it was given contained no order numbers at
 all, the model once appended "ORD-88902" to its answer. The prompt already
 forbade exactly that.
 
-A rule the model is told to follow is not a guarantee. So every
-order-number-shaped token in a phrased answer is now checked against the facts
-the model was given, and an answer that fails the check is discarded in favour
-of the plain computed one.
+An instruction the model is told to follow is not a guarantee. Every
+order-number-shaped token in a phrased answer is therefore checked against the
+facts the model was given, and an answer that fails the check is discarded in
+favour of the computed one.
 
 ### What types of AI queries are supported
 
