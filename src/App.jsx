@@ -176,9 +176,25 @@ function Shell() {
       <div className="flex">
         {/* Desktop rail. The wrapper carries the gradient's closing colour so
             the column still reads as one surface on pages taller than the
-            viewport, where the sticky panel itself stops at the fold. */}
-        <div className={`hidden w-60 shrink-0 bg-coolant ${railOpen ? 'lg:block' : ''}`}>
-          <div className="sticky top-16 flex h-[calc(100vh-4rem)] flex-col bg-brand-column">
+            viewport, where the sticky panel itself stops at the fold.
+
+            Collapsing is a width change on the wrapper and a slide on the
+            panel, running together: the wrapper alone would squash the nav
+            while it narrowed, and the panel alone would leave a gap where the
+            column used to be. No `overflow-hidden` anywhere above the sticky
+            panel, because a clipping ancestor makes it the scrollport and the
+            column stops sticking. The panel travels left, off the viewport
+            edge, so nothing is clipped and nothing overlaps the page. */}
+        <div
+          className={`hidden shrink-0 bg-coolant transition-[width] duration-300 ease-out motion-reduce:transition-none lg:block ${
+            railOpen ? 'w-60' : 'w-0'
+          }`}
+        >
+          <div
+            className={`sticky top-16 flex h-[calc(100vh-4rem)] w-60 flex-col bg-brand-column transition-transform duration-300 ease-out motion-reduce:transition-none ${
+              railOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+          >
             <SidebarBody
               items={available}
               view={view}
@@ -191,9 +207,10 @@ function Shell() {
 
         {/* Slide-over for small screens */}
         <aside
-          className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col bg-brand-column transition-transform lg:hidden ${
+          className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col bg-brand-column shadow-lift transition-transform duration-300 ease-out motion-reduce:transition-none lg:hidden ${
             menuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
+          aria-hidden={!menuOpen}
         >
           <button
             className="absolute right-3 top-3 z-10 text-white/70"
@@ -211,13 +228,18 @@ function Shell() {
           />
         </aside>
 
-        {menuOpen && (
-          <button
-            className="fixed inset-0 z-30 bg-marine/40 lg:hidden"
-            onClick={() => setMenuOpen(false)}
-            aria-label="Close navigation"
-          />
-        )}
+        {/* Always mounted so it can fade. Rendering it only while open meant
+            the backdrop appeared and vanished instantly under a panel that
+            took 300ms to travel. */}
+        <button
+          className={`fixed inset-0 z-30 bg-marine/40 transition-opacity duration-300 ease-out motion-reduce:transition-none lg:hidden ${
+            menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+          onClick={() => setMenuOpen(false)}
+          aria-label="Close navigation"
+          aria-hidden={!menuOpen}
+          tabIndex={menuOpen ? 0 : -1}
+        />
 
         <AssistantPanel open={assistantOpen} onClose={() => setAssistantOpen(false)} />
 
