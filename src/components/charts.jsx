@@ -51,32 +51,45 @@ export function StatusMix({ orders, loading = false }) {
 
   const pct = (n) => Math.round((n / total) * 100)
 
+  // Each segment carries where it sits along the bar, so the label can be
+  // anchored over the colour it describes instead of at a fixed corner.
+  let consumed = 0
+  const segments = present.map(({ status, count }) => {
+    const start = (consumed / total) * 100
+    const width = (count / total) * 100
+    consumed += count
+    return { status, count, centre: start + width / 2, width }
+  })
+
   return (
     <div>
       <div className="relative">
         {hovered && (
-          <div className="pointer-events-none absolute -top-1 left-0 z-10 -translate-y-full rounded-lg bg-marine px-2.5 py-1.5 text-xs text-white shadow-lift">
+          <div
+            className="pointer-events-none absolute -top-1 z-10 whitespace-nowrap rounded-lg bg-marine px-2.5 py-1.5 text-xs text-white shadow-lift"
+            style={labelPosition(hovered.centre)}
+          >
             <span className="font-medium">{hovered.status}</span> · {hovered.count} job
             {hovered.count === 1 ? '' : 's'} ({pct(hovered.count)}%)
           </div>
         )}
 
         <div className="flex h-7 items-center gap-[2px]">
-          {present.map(({ status, count }, i) => (
+          {segments.map(({ status, count, centre, width }, i) => (
             <button
               key={status}
               type="button"
-              style={{ width: `${(count / total) * 100}%` }}
+              style={{ width: `${width}%` }}
               className="flex h-full items-center"
-              onMouseEnter={() => setHovered({ status, count })}
+              onMouseEnter={() => setHovered({ status, count, centre })}
               onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered({ status, count })}
+              onFocus={() => setHovered({ status, count, centre })}
               onBlur={() => setHovered(null)}
               aria-label={`${status}: ${count} of ${total} orders`}
             >
               <span
                 className={`h-3.5 w-full ${i === 0 ? 'rounded-l' : ''} ${
-                  i === present.length - 1 ? 'rounded-r' : ''
+                  i === segments.length - 1 ? 'rounded-r' : ''
                 }`}
                 style={{ backgroundColor: COLORS[status] }}
               />
@@ -99,6 +112,20 @@ export function StatusMix({ orders, loading = false }) {
       </ul>
     </div>
   )
+}
+
+/**
+ * Places the hover label over its segment, without letting it escape the card.
+ *
+ * A segment near either end has its centre close to the edge, so a centred
+ * label would hang outside the chart. Within about a label's width of an end,
+ * it anchors to that end instead of to the segment.
+ */
+function labelPosition(centre) {
+  const lift = 'translateY(-100%)'
+  if (centre <= 15) return { left: 0, transform: lift }
+  if (centre >= 85) return { right: 0, transform: lift }
+  return { left: `${centre}%`, transform: `translateX(-50%) ${lift}` }
 }
 
 /* ------------------------------------------------------------------ */
