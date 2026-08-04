@@ -130,48 +130,92 @@ and the trail shows what moved.
 
 ### Module 2: Technician Portal
 
-Mobile first, with its own chrome. No sidebar, large tap targets, and a sticky
-action bar with safe-area padding.
+#### Built for a phone, not a desk
 
-Only jobs assigned to the signed-in technician are fetched at all. The rule
-"only the assigned technician may complete a job" is enforced by never loading
-anyone else's work, rather than by hiding a button.
+Technicians use this standing in a customer's home, one-handed. So the
+technician role gets a different layout from the rest of the app: no sidebar,
+large tap targets, and an action bar fixed to the bottom of the screen with
+padding for the phone's home indicator.
 
-- Job cards tap through to Google Maps and to the phone dialler.
-- **Start job** moves the order to In Progress.
-- **Complete job** collects work done (the only required field), extra charges,
-  remarks, and up to six photos, videos or PDFs with camera capture on mobile.
-- Order number, technician name, timestamp and final amount are derived rather
-  than typed. The running final amount stays visible in the footer.
-- Payment capture (amount, method, receipt photo, notes) sits collapsed by
-  default, so the common path stays short.
+Two details that only matter in the field:
+
+- The address on a job card opens Google Maps with it already searched. The
+  phone number opens the dialler.
+- The camera opens directly from the upload button, so evidence does not have to
+  be taken first and found afterwards.
+
+#### Doing the job
+
+**Start job** moves the order to In Progress.
+
+**Complete job** collects the work done, which is the only required field, plus
+extra charges, remarks, and up to six photos, videos or PDFs.
+
+Four things are never typed, because the app already knows them: order number,
+technician name, timestamp and final amount. The final amount updates as extra
+charges are entered and stays visible in the footer, so the technician can see
+the total before they save it.
+
+**Payment capture** (amount, method, receipt photo, notes) starts collapsed. Not
+every job takes payment on site, and the common path should not scroll past
+fields most jobs leave empty.
 
 Completing a job produces a customer feedback message and a manager notice.
 
+#### Why the rule is enforced by the query
+
+Only jobs assigned to the signed-in technician are fetched from the database at
+all.
+
+The rule "only the assigned technician may complete a job" could have been a
+hidden button. Instead, another technician's work never reaches the browser, so
+there is nothing to reveal.
+
 ### Module 3: WhatsApp notification trigger
 
-[`api/notify.js`](api/notify.js) is a serverless endpoint. Give it an order id
-and it re-reads the order and checks `status = 'Job Done'` itself, instead of
-trusting the caller. A client cannot fire "your job is complete" at a customer
-whose job is still open. It refuses with a 409 naming the actual status.
+When a job is marked Job Done, the app calls
+[`api/notify.js`](api/notify.js), a serverless endpoint that generates the
+customer and manager messages.
 
-- Messages come from the same template module the UI previews from, so what
-  staff read on screen is what the endpoint logs.
-- A second call for the same order returns what was already sent rather than
-  notifying twice, unless `force` is passed.
-- Job completion calls this endpoint, and falls back to building the messages in
-  the browser if it is unreachable.
+#### The endpoint does not trust its caller
 
-Delivery is a `wa.me` deep link, which is the method the brief names. There are
-no WhatsApp Business API credentials for this build, and getting them needs a
-verified business behind the number. Swapping one in means replacing a single
-function in [`api/notify.js`](api/notify.js) and handling its status webhooks.
-The deep link sits behind a boundary rather than spread through the app.
+Given an order id, it re-reads that order from the database and checks
+`status = 'Job Done'` for itself. It does not accept the status from whoever
+called it.
+
+This is the point of putting it on the server. A client cannot fire "your job is
+complete" at a customer whose job is still open. If the status is wrong, the
+endpoint refuses with a 409 that names the actual status.
+
+Two more safeguards:
+
+- **Calling twice does not notify twice.** A repeat call returns what was
+  already sent, unless `force` is passed.
+- **An unreachable endpoint does not lose the messages.** Job completion falls
+  back to building them in the browser.
+
+Messages come from the same template file the UI previews from, so what staff
+read on screen is exactly what the endpoint records.
+
+#### Why delivery is a deep link
+
+A `wa.me` link is the method the brief names, and it is what this build can
+honestly do. The WhatsApp Business API needs a Meta Business account, a
+registered number and approved templates, all of which require a verified
+business behind them.
+
+Swapping one in later means replacing a single function in
+[`api/notify.js`](api/notify.js) and handling its status webhooks. The deep link
+sits behind that boundary rather than spread through the app.
 
 ### KPI dashboard
 
-A Performance page for admins and managers: jobs completed, value collected,
-postponements, and a leaderboard ranked by jobs with value as the tie-break.
+A Performance page for admins and managers, answering how much work got done and
+who did it.
+
+It shows jobs completed, value collected and postponements, with a leaderboard
+ranked by jobs and value as the tie-break. Two technicians on the same job count
+are separated by what they brought in.
 
 Periods are this week, last week, this month and all time. Weeks start on
 Monday.
@@ -179,15 +223,20 @@ Monday.
 ### Manager: review queue
 
 Managers own the last three steps of the workflow, so they get a page built
-around that.
+around one question: should this job be signed off?
 
-Everything at Job Done in one list, with the decision and its evidence side by
-side: quoted against final with the variance called out, the technician's
-write-up, and the files they attached. Approve or send back inline, with an
-optional review note.
+Every job at Job Done sits in one list, with the decision and its evidence side
+by side:
 
-The dashboard opens on a different line for each role. An admin sees unassigned
-work. A manager sees work waiting for sign-off.
+- Quoted against final, with the variance called out.
+- The technician's write-up of the work.
+- The files they attached.
+
+A manager approves or sends the job back without leaving the list, and can add a
+review note.
+
+The dashboard also opens on a different line for each role. An admin sees
+unassigned work. A manager sees work waiting for sign-off.
 
 ### AI: Operations Query Window
 
@@ -197,8 +246,10 @@ A manager-only side panel, opened with **Ask** in the top bar. Details are in
 ### AI: Workflow Supervisor
 
 A "Needs attention" card on the dashboard, backed by
-[`api/supervise.js`](api/supervise.js). It checks completed jobs against four
-rules, each with its threshold written in code:
+[`api/supervise.js`](api/supervise.js). It reads completed jobs and points a
+manager at the ones worth a second look.
+
+Four rules, each with its threshold written in code:
 
 | Rule | Fires when |
 | --- | --- |
@@ -207,8 +258,12 @@ rules, each with its threshold written in code:
 | Postponed repeatedly | rescheduled twice or more |
 | Waiting on review | Job Done for three days or more |
 
-The rules produce the flags. The model only writes the one-line summary at the
-top, and the card says when that summary was written without it.
+**The rules decide what is flagged, not the model.** The model only writes the
+one-line summary at the top of the card. If it is unavailable, the flags are
+unchanged and the card says the summary was written without it.
+
+That split is deliberate. A flag is a claim about a real job, so it comes from
+code that can be checked. Prose is the part where being wrong is survivable.
 
 ---
 
@@ -357,33 +412,42 @@ Three messages:
 Templates live in `src/lib/whatsapp.js` and are delivered as `wa.me` links with
 the text pre-filled.
 
-**The message is always shown in full next to the send button**, rather than
-hidden behind it. Staff are about to send this to a paying customer, and a
-pre-filled WhatsApp draft stays editable, so they should read it first.
+### The message is shown before it is sent
 
-Every generated message is written to `notifications`, so the history is
-auditable even though sending is a manual tap.
+The full text sits next to the send button rather than behind it.
 
-### Why there are only two states
+Staff are about to send this to a paying customer, and a pre-filled WhatsApp
+draft stays editable after it opens. They should read it first.
 
-The top bar carries a feed of everything generated, in two states, because a
-deep link only supports two.
+Every generated message is written to the `notifications` table, so the history
+is auditable even though sending is a manual tap.
 
-- **Opened.** Opening the link is observable, so that is recorded.
-- **Marked as sent.** Whether the message actually went is not observable at
-  all. The person may edit it, or close WhatsApp without sending. So they
-  confirm it themselves.
+### Why a message has only two states
 
-Nothing in the app claims delivery. The link stays available in every state,
-because somebody who closed WhatsApp by accident needs a way back to it.
+The top bar carries a feed of everything the app has generated. Each message has
+two states, because a deep link can only support two.
+
+- **Opened.** The app can see that the link was opened, so it records that.
+- **Marked as sent.** The app cannot see whether the message actually went. The
+  sender may edit it, or close WhatsApp without sending. So the sender confirms
+  it themselves.
+
+**Nothing in the app claims delivery.** Recording "sent" when all that happened
+was a link opening would put a false statement in the audit trail.
+
+The link stays available in every state, because somebody who closed WhatsApp by
+accident needs a way back to it.
 
 Real sent, delivered and read receipts need the WhatsApp Business Cloud API,
 where messages go out over HTTP from the server and Meta posts status webhooks
 back. That needs a Meta Business account, a registered number and approved
 templates, which this build does not have.
 
-Numbers are normalised for `wa.me` (`012-345 6789` becomes `60123456789`) and
-displayed as `+60 12-345 6789`.
+### Phone number handling
+
+Numbers are normalised for `wa.me`, so `012-345 6789` becomes `60123456789`.
+They are displayed as `+60 12-345 6789`, whatever format the record happens to
+store.
 
 ---
 
@@ -394,7 +458,8 @@ is ordinary code.
 
 ### The assistant: `api/query.js`
 
-Four steps, and the model is trusted with two of them.
+A manager types a question and gets an answer back. Between those two moments
+there are four steps, and the model is only trusted with two of them.
 
 ```
 question -> 1. classify (model)   -> intent + parameters
@@ -403,24 +468,39 @@ question -> 1. classify (model)   -> intent + parameters
          -> 4. phrase (model)     -> a sentence around those numbers
 ```
 
-**The model never sees the database and never produces a figure.** It turns a
-sentence into an intent, then turns computed facts into prose. A hallucination
-can change the wording of an answer, but not the number in it.
+Read that as: the model reads the question, the server gets the data and does
+the arithmetic, then the model writes the sentence.
 
-**Retrieval is controlled.** Each intent declares its table, its exact column
-list, its date window and a row cap. Nothing selects `*`, so a customer's phone
-number cannot reach the model because somebody asked about job counts.
+#### The model never touches the database, and never produces a figure
 
-A technician name returned by the classifier is only used after it matches a row
-in `technicians`, so the model cannot invent a filter value.
+It turns a question into an intent, and later turns finished numbers into prose.
+Every number in an answer was calculated in JavaScript from rows the server
+fetched.
 
-**Invented identifiers are checked for, not only forbidden.** Asked for a count,
-where the facts contain no order numbers at all, the model once appended
-"ORD-88902". The prompt already forbade that.
+So a hallucination can change the wording of an answer. It cannot change the
+number in it.
 
-So any order-number-shaped token in a phrased answer is now checked against the
-facts the model was given, and an answer that fails the check is thrown away for
-the computed one.
+#### Retrieval is declared in advance
+
+Each intent names its table, its exact column list, its date window and a row
+cap. Nothing selects `*`.
+
+That means a customer's phone number cannot reach the model because somebody
+asked about job counts. The columns for that question do not include it.
+
+A technician name coming back from the classifier is only used after it matches
+a row in `technicians`, so the model cannot invent a filter value.
+
+#### Invented identifiers are checked for, not just forbidden
+
+Asked for a count, where the facts it was given contained no order numbers at
+all, the model once appended "ORD-88902" to its answer. The prompt already
+forbade exactly that.
+
+A rule the model is told to follow is not a guarantee. So every
+order-number-shaped token in a phrased answer is now checked against the facts
+the model was given, and an answer that fails the check is discarded in favour
+of the plain computed one.
 
 ### What types of AI queries are supported
 
