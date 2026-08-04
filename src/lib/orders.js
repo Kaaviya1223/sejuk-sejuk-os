@@ -7,7 +7,7 @@
  */
 
 import { supabase, JOB_FILES_BUCKET, isMissingSchema } from './supabase.js'
-import { FALLBACK_TECHNICIANS, COMPLETED_STATUSES } from './constants.js'
+import { FALLBACK_TECHNICIANS, COMPLETED_STATUSES, DEMO_PHONE } from './constants.js'
 import { buildNotification } from './whatsapp.js'
 
 const ORDER_COLUMNS = '*'
@@ -565,7 +565,7 @@ async function triggerJobDoneNotifications(order) {
  * Fires when a job is marked Job Done: a feedback request to the customer and
  * a completion notice for the manager / accounts.
  */
-export async function buildJobDoneNotifications(order, managerPhone = null) {
+export async function buildJobDoneNotifications(order, managerPhone = DEMO_PHONE) {
   const messages = [
     buildNotification('customer_job_done', order),
     buildNotification('manager_job_done', order, { phone: managerPhone }),
