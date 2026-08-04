@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import { buildNotification } from '../src/lib/whatsapp.js'
-import { DEMO_PHONE } from '../src/lib/constants.js'
 
 /**
  * Module 3 — the WhatsApp notification trigger.
@@ -98,11 +97,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // The manager is not a row in any table, so their number has nowhere to
-    // come from but configuration. Without a fallback the link opens WhatsApp
-    // with no recipient, which reads as broken rather than unconfigured, so
-    // the demo handset stands in until a deployment sets the real one.
-    const managerPhone = process.env.MANAGER_WHATSAPP || DEMO_PHONE
+    const managerPhone = process.env.MANAGER_WHATSAPP || null
     const notifications = await Promise.all(
       [
         buildNotification('customer_job_done', order),
