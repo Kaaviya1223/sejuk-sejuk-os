@@ -437,8 +437,9 @@ close second, for the reasons above.
 
 **How did you use AI tools while building this project?**
 
-I used Claude Code throughout. I worked in a loop: describe what I wanted,
-review what came back, run it, and correct it.
+I used Claude Code throughout, for the pages, the styling and the serverless
+endpoints. I worked in a loop: describe what I wanted, review what came back,
+run it, and correct it.
 
 Most of my effort went into direction and review. I chose the reference design
 and set the visual direction, then took several passes at the palette, the
