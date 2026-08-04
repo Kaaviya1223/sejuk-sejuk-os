@@ -437,30 +437,16 @@ close second, for the reasons above.
 
 **How did you use AI tools while building this project?**
 
-I used Claude Code throughout, and I would rather say so plainly than pretend
-otherwise. It wrote most of the code I described to it: pages, Tailwind, the
-serverless endpoints. What I did was decide what to build, review everything it
-produced, and keep testing until the result held up.
+I used Claude Code throughout and would rather say so plainly. It wrote most of
+the code. I decided what to build, reviewed what came back, and kept testing
+until it held up.
 
-A lot of the work was that review loop. I picked the reference design and the
-direction the interface should take, and pushed back through several passes on
-the palette, the typeface, the dashboard layout and the density of each screen.
-Some of those were corrections to things I did not like on sight: green used as
-both the brand colour and the "finished" colour, so neither meant anything; a
-display typeface that made an order number look stylised; two cards on the
-dashboard that looked identical because one was a record and the other was a
-request, and nothing said so. I also cut features that were not earning their
-place, including a panel under every AI answer that printed the SQL, which was
-the right evidence for a reviewer and the wrong thing for an operations manager
-to read all day.
-
-The bugs mostly came from using the app rather than from reading the code. The
-role menu was invisible because a decorative layer clipped it. The assistant
-looked broken on submit because the typed text stayed in the box until the
-answer came back. It once invented an order number that does not exist. Asking
-what the review queue's Reopen button actually did turned up that it did
-nothing at all: it set a Job Done order to Job Done, wrote a meaningless audit
-entry, and went around the state machine the rest of the app is built on. Each
-of those looked fine in the source. That is the part I would take away from
-this: the tool is fast at producing something plausible, and the value I added
-was refusing to accept plausible.
+Most of my time went into that loop. I chose the reference design and pushed
+back through several passes on the palette, the typeface and the layout, and cut
+a panel under every AI answer that printed the SQL, which was useful to a
+reviewer and useless to an operations manager. The bugs came from using the app
+rather than reading it: a role menu clipped by a decorative layer, the assistant
+looking broken on submit, an invented order number, and a Reopen button that
+went around the state machine and did nothing. All of it looked fine in the
+source. The tool is fast at producing something plausible, and the value I added
+was not accepting plausible.
