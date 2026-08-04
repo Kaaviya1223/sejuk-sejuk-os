@@ -271,7 +271,9 @@ The top bar carries a feed of everything generated, in two states, because a
 deep link only supports two. Opening the link is observable, so that is recorded
 as opened. Whether the message actually went is not observable at all: the
 person may edit it, or close WhatsApp without sending. So they confirm it, with
-a Mark as sent button. Nothing in the app claims delivery.
+a Mark as sent button. Nothing in the app claims delivery. The link itself stays
+available in every state, because somebody who closed WhatsApp by accident needs
+a way back to it.
 
 Real sent, delivered and read receipts need the WhatsApp Business Cloud API,
 where messages go out over HTTP from the server and Meta posts status webhooks

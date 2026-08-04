@@ -123,29 +123,32 @@ function NotificationBell() {
                       </div>
 
                       {/* Opened is observed. Sent is confirmed by the person
-                          who sent it, because nothing else can know. */}
-                      {n.opened_at && !n.sent_at ? (
-                        <button
-                          onClick={() => stamp(n.id, 'sent_at', markNotificationSent)}
-                          className="mt-0.5 flex h-7 shrink-0 items-center gap-1 self-start rounded-lg bg-coolant-600 px-2 text-[11px] font-medium text-white transition hover:bg-coolant-700"
-                        >
-                          <Check size={11} />
-                          Mark as sent
-                        </button>
-                      ) : (
-                        n.deep_link && (
+                          who sent it, because nothing else can know. The link
+                          stays available in every state: somebody who closed
+                          WhatsApp by accident needs a way back to it. */}
+                      <div className="mt-0.5 flex shrink-0 flex-col items-end gap-1 self-start">
+                        {n.deep_link && (
                           <a
                             href={n.deep_link}
                             target="_blank"
                             rel="noreferrer"
                             onClick={() => stamp(n.id, 'opened_at', markNotificationOpened)}
-                            className="mt-0.5 flex h-7 shrink-0 items-center gap-1 self-start rounded-lg border border-slate-line px-2 text-[11px] font-medium text-brand transition hover:bg-frost"
+                            className="flex h-7 items-center gap-1 rounded-lg border border-slate-line px-2 text-[11px] font-medium text-brand transition hover:bg-frost"
                           >
                             <ExternalLink size={11} />
-                            {n.sent_at ? 'Resend' : 'Open'}
+                            {n.opened_at || n.sent_at ? 'Open again' : 'Open'}
                           </a>
-                        )
-                      )}
+                        )}
+                        {n.opened_at && !n.sent_at && (
+                          <button
+                            onClick={() => stamp(n.id, 'sent_at', markNotificationSent)}
+                            className="flex h-7 items-center gap-1 rounded-lg bg-coolant-600 px-2 text-[11px] font-medium text-white transition hover:bg-coolant-700"
+                          >
+                            <Check size={11} />
+                            Mark as sent
+                          </button>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>

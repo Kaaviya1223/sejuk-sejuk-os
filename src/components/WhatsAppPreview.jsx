@@ -59,25 +59,9 @@ function WhatsAppPreview({ notification, compact = false, step }) {
           )}
         </div>
 
-        {sent ? (
-          <span className="flex shrink-0 items-center gap-1 rounded-lg bg-success-50 px-2.5 py-1.5 text-[11px] font-medium text-success-700 dark:text-[#7FD79A]">
-            <Check size={12} />
-            Sent
-          </span>
-        ) : opened ? (
-          <Button
-            variant="accent"
-            size="sm"
-            className="shrink-0"
-            onClick={() => {
-              setSent(true)
-              markNotificationSent(notification.id)
-            }}
-          >
-            <Check size={13} />
-            Mark as sent
-          </Button>
-        ) : (
+        {/* The link never goes away. Marking it sent is a separate act, and
+            somebody who closed WhatsApp needs to be able to open it again. */}
+        <div className="flex shrink-0 items-center gap-1.5">
           <a
             href={notification.deep_link}
             target="_blank"
@@ -86,14 +70,34 @@ function WhatsAppPreview({ notification, compact = false, step }) {
               setOpened(true)
               markNotificationOpened(notification.id)
             }}
-            className="shrink-0"
           >
-            <Button variant="whatsapp" size="sm">
+            <Button variant={sent || opened ? 'outline' : 'whatsapp'} size="sm">
               <ExternalLink size={13} />
-              Open in WhatsApp
+              {sent || opened ? 'Open again' : 'Open in WhatsApp'}
             </Button>
           </a>
-        )}
+
+          {sent ? (
+            <span className="flex items-center gap-1 rounded-lg bg-success-50 px-2.5 py-1.5 text-[11px] font-medium text-success-700 dark:text-[#7FD79A]">
+              <Check size={12} />
+              Sent
+            </span>
+          ) : (
+            opened && (
+              <Button
+                variant="accent"
+                size="sm"
+                onClick={() => {
+                  setSent(true)
+                  markNotificationSent(notification.id)
+                }}
+              >
+                <Check size={13} />
+                Mark as sent
+              </Button>
+            )
+          )}
+        </div>
       </div>
 
       {!compact && (
